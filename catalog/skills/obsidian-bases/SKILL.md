@@ -39,7 +39,8 @@ views:
 ```
 
 ## Propiedades
-- De la nota: `status` o `note.status`. Objetos anidados de OKF: `generated.at`.
+- De la nota: `status` o `note.status` en filtros, fórmulas y `order`. Objetos anidados de OKF: `generated.at`.
+- **En `properties:` (nombres de columna), siempre con prefijo**: `note.status: { displayName: Estado }`. Sin `note.`, Obsidian ignora `displayName` y la columna sale con el nombre técnico (comprobado en Obsidian 1.15.1, 2026-11-14).
 - Del archivo: `file.name`, `file.basename`, `file.path`, `file.folder`, `file.ext`, `file.size`, `file.ctime`, `file.mtime`, `file.tags`, `file.links`, `file.backlinks`.
 - Fórmulas: `formula.<nombre>`.
 
