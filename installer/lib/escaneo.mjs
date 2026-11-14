@@ -36,6 +36,15 @@ export function escanear(raiz) {
   const skillsExistentes = (dir) => { try { return readdirSync(join(raiz, dir)); } catch { return []; } };
   const modulosMaven = [...leer(join(raiz, "pom.xml")).matchAll(/<module>([^<]+)<\/module>/g)].map((m) => m[1].trim());
 
+  // Spring Modulith: cada paquete directo bajo el paquete principal es un módulo de aplicación; sus dependencias
+  // permitidas, si las declara, están en su package-info.java (@ApplicationModule(allowedDependencies = …)).
+  const springModulith = dep(/spring-modulith/);
+  const modulosAplicacion = (rutas) => rutas.map((ruta) => {
+    const info = leer(join(raiz, ruta, "package-info.java"), "");
+    const m = /allowedDependencies\s*=\s*\{?([^})]*)/.exec(info);
+    return { ruta, depende: m ? [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]) : null };
+  });
+
   const remoto = git(raiz, ["remote", "get-url", "origin"]);
   const ramas = git(raiz, ["branch", "--format=%(refname:short)"]).split("\n").filter(Boolean);
 
@@ -47,6 +56,7 @@ export function escanear(raiz) {
   return {
     nombre: basename(raiz),
     paquetes,
+    modulosAplicacion: springModulith ? modulosAplicacion(paquetes) : [],
     remoto: { url: remoto || null, host: /github\.com/.test(remoto) ? "github" : /gitlab/.test(remoto) ? "gitlab" : remoto ? "otro" : null },
     ramaBase: ["develop", "main", "master"].find((r) => ramas.includes(r)) || git(raiz, ["rev-parse", "--abbrev-ref", "HEAD"]) || "main",
     clis: { gh: instalada("gh"), acli: instalada("acli"), glab: instalada("glab") },
@@ -61,6 +71,7 @@ export function escanear(raiz) {
     modulosMaven,
     señales: {
       springBoot: dep(/spring-boot/),
+      springModulith,
       camunda: dep(/io\.camunda|camunda-spring-boot/) || archivos.some((a) => /\.(bpmn|dmn)$/.test(a)),
       bpmn: archivos.filter((a) => /\.(bpmn|dmn)$/.test(a)).length,
       vaadin: dep(/com\.vaadin/),

@@ -15,7 +15,7 @@ En el tutorial hiciste un [FTD](../ayuda/glosario.md#ftd) completo en Spring Pet
 8. Anota la evidencia y hace commit del código con el FTD.
 
 ### Quién hace cada cosa
-El diagrama anterior dice **qué pasos** hay; este dice **quién habla con quién** en cada uno, con la tarea #23 del proyecto de reservas de viaje como ejemplo. Las flechas continuas son peticiones y las discontinuas, respuestas. En «Git y gestor», *gestor* es el [gestor de tareas](../ayuda/glosario.md#gestor-de-tareas) del proyecto (GitHub Issues, Jira o GitLab).
+El diagrama anterior dice **qué pasos** hay; este dice **quién habla con quién** en cada uno, con una tarea #23 del gestor como ejemplo. Las flechas continuas son peticiones y las discontinuas, respuestas. En «Git y gestor», *gestor* es el [gestor de tareas](../ayuda/glosario.md#gestor-de-tareas) del proyecto (GitHub Issues, Jira o GitLab).
 
 ```mermaid
 sequenceDiagram
@@ -47,12 +47,12 @@ El documento vive en `brain/factory/ftd/<fecha>-<tema>.md`, se versiona con el c
 ## Cuándo un FTD sube a ASDD
 El agente para y propone pasar a [ASDD](../ayuda/glosario.md#asdd) si:
 
-- aparece una **decisión que no le corresponde** («¿el cliente bloqueado puede reservar?»);
+- aparece una **decisión que no le corresponde** («¿una visita puede tener dos veterinarios?»);
 - lo pedido **contradice una decisión** guardada en el brain;
-- el **riesgo previsto o real es 2**: un `.bpmn`, una migración, el `pom.xml`, la seguridad o la CI.
+- el **riesgo previsto o real es 2**: una migración o un `*.sql`, el `pom.xml`, la seguridad o la CI.
 
-> [!example] En el proyecto de reservas de viaje: la tarea #23
-> «Empieza la tarea #23» pedía cambiar los reintentos de una tarea de servicio en un `.bpmn`. El agente estimó **riesgo 1**, porque al empezar no había cambios que medir y no pasó la lista de archivos al script. Un `.bpmn` es riesgo 2. A raíz de esto, el agente calcula el riesgo **con las rutas previstas antes de tocar nada**, y un [hook](../ayuda/glosario.md#hook) lo vuelve a calcular al terminar cada respuesta por si se escapa algo.
+> [!example] Una lección de las pruebas
+> En una prueba anterior, una tarea pedía cambiar un archivo de riesgo 2. El agente estimó **riesgo 1**, porque al empezar no había cambios que medir y no pasó la lista de archivos al script. A raíz de esto, el agente calcula el riesgo **con las rutas previstas antes de tocar nada**, y un [hook](../ayuda/glosario.md#hook) lo vuelve a calcular al terminar cada respuesta por si se escapa algo.
 
 ## Trabajar desde una tarea del gestor
 Si el proyecto tiene GitHub Issues, Jira o GitLab configurado, basta con el número:
@@ -61,18 +61,17 @@ Si el proyecto tiene GitHub Issues, Jira o GitLab configurado, basta con el núm
 Empieza la tarea #23
 ```
 
-El agente lee la tarea, crea la rama con el formato del proyecto (por ejemplo `23-fix-retries-validar-datos-entrada`), la marca como «En curso» con un comentario breve (carril, rama y documento) y enlaza el FTD (`tarea: 23`). Lo que la tarea no aclare va a los puntos abiertos, no a supuestos. Al abrir el [PR](../ayuda/glosario.md#pr) la pasa a «En revisión», y la cierra cuando el PR se integra o cuando tú lo pides. Qué puede hacer sin preguntarte (comentar, cambiar el estado, crear o cerrar) se decide al instalar; si algo no está permitido, te lo pide.
+El agente lee la tarea, crea la rama con el formato del proyecto (por ejemplo `23-fix-validacion-fecha-visita`), la marca como «En curso» con un comentario breve (carril, rama y documento) y enlaza el FTD (`tarea: 23`). Lo que la tarea no aclare va a los puntos abiertos, no a supuestos. Al abrir el [PR](../ayuda/glosario.md#pr) la pasa a «En revisión», y la cierra cuando el PR se integra o cuando tú lo pides. Qué puede hacer sin preguntarte (comentar, cambiar el estado, crear o cerrar) se decide al instalar; si algo no está permitido, te lo pide.
 
-> [!example] En el proyecto de reservas de viaje: la tarea #51
+> [!example] En una prueba anterior: la tarea #51
 > «Empieza la tarea #51» terminó sin tocar código: el agente leyó la tarea, revisó el código y el historial y vio que **ya estaba hecha** (había un commit con «(#51)»), aunque la tarea seguía abierta. No inventó trabajo: lo explicó y propuso cerrarla. Coste: 0,22 USD.
 
 ## Cuando algo sale en rojo
-Un FTD no se cierra con «tests en verde», sino con **evidencia**, y lo que no se pudo comprobar se dice. En el proyecto de reservas de viaje se pidió un test de arquitectura ([ArchUnit](../ayuda/glosario.md#archunit)) que comprobara que el dominio no depende de Spring. El test encontró una violación real que no se había pedido arreglar, y el FTD lo reflejó así:
+Un FTD no se cierra con «tests en verde», sino con **evidencia**, y lo que no se pudo comprobar se dice. En una prueba anterior, en otro proyecto Spring Boot, se pidió un test de arquitectura ([ArchUnit](../ayuda/glosario.md#archunit)) que comprobara que el dominio no depende de Spring. El test encontró una violación real que no se había pedido arreglar, y el FTD lo reflejó así:
 
 ```markdown
 ## Checklist
 - [x] dominio no depende de JPA — prueba: ArchitectureTest.dominio_no_depende_de_jpa (verde)
-- [x] dominio no depende de Camunda — prueba: ArchitectureTest.dominio_no_depende_de_camunda (verde)
 - [ ] dominio no depende de Spring — prueba: ArchitectureTest.dominio_no_depende_de_spring
       (ROJO: violación real, ver abajo)
 - [ ] Controles: mvnq verify — no ejecutado
@@ -88,8 +87,10 @@ Tres cosas que el agente **no** hizo: marcar como hecho lo que estaba en rojo, d
 ## Cuánto cuesta
 | Tarea | Sin [meta-harness-factory](../ayuda/glosario.md#meta-harness) | Con meta-harness-factory |
 |---|---|---|
-| Test de arquitectura (proyecto de reservas de viaje) | 0,167 USD | 0,193 USD (+16 %) |
-| Cambio en PetClinic, con revisor | — | 0,36 USD |
+| Test de arquitectura (prueba anterior, otro proyecto Spring Boot) | 0,167 USD | 0,193 USD (+16 %) |
+| Cambio en PetClinic (versión base), con revisor | — | 0,36 USD |
+
+<small>Se sustituirán por los casos medidos en PetClinic Modulith.</small>
 
 Con **meta-harness-factory** el FTD cuesta algo más, porque el agente escribe el documento y la evidencia y, con riesgo 1, lanza un revisor. A cambio, queda constancia de qué se hizo y cómo se comprobó, y un segundo par de ojos que no vio escribir el código.
 

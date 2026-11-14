@@ -13,14 +13,14 @@
 // Códigos de salida: 0 bien · 1 error · 2 faltan respuestas · 3 el plan cambió.
 import { existsSync, lstatSync, readdirSync, readlinkSync, rmSync, unlinkSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { aplicar, BLOQUE_FIN, BLOQUE_INICIO, fusionarSettings } from "./lib/aplicar.mjs";
+import { aplicar, BLOQUE_FIN, BLOQUE_INICIO, fusionarSettings, IGNORADOS } from "./lib/aplicar.mjs";
 import { doctor } from "./lib/doctor.mjs";
 import { escanear } from "./lib/escaneo.mjs";
 import { construirPlan } from "./lib/plan.mjs";
 import { PREGUNTAS, preguntar, validar } from "./lib/preguntas.mjs";
 import { RAIZ_MH, VERSION, escribir, leer } from "./lib/util.mjs";
 
-const CAMPOS = ["nivel", "tipo", "objetivo", "alcance", "integracion", "convencion", "formatoRama", "gestor", "proyecto", "acceso"];
+const CAMPOS = ["nivel", "tipo", "objetivo", "alcance", "integracion", "convencion", "formatoRama", "idiomaCodigo", "idiomaBrain", "traza", "gestor", "proyecto", "acceso"];
 
 const ALIAS_ORDEN = { onboard: "instalar", doctor: "comprobar", reassess: "reevaluar", sync: "actualizar", uninstall: "desinstalar" };
 const ALIAS_OPCION = { target: "carpeta", "accept-plan": "aceptar-plan" };
@@ -58,7 +58,7 @@ export function mostrarPlan(plan, raiz) {
   l.push(`Plan de instalación ${plan.id} · meta-harness-factory ${plan.version} · proyecto ${plan.proyecto} · perfil ${plan.perfil}`, "");
   l.push("Módulos:");
   for (const [id, d] of Object.entries(plan.modulos)) {
-    l.push(`  ${ICONO[d.estado]} ${id.padEnd(8)} ${d.estado} — ${d.motivo}${d.reevaluarSi ? ` (se propondrá si ${d.reevaluarSi})` : ""}`);
+    l.push(`  ${ICONO[d.estado]} ${id.padEnd(8)} ${d.estado} — ${d.motivo}${d.variante ? ` · variante ${d.variante}` : ""}${d.reevaluarSi ? ` (se propondrá si ${d.reevaluarSi})` : ""}`);
   }
   const c = plan.componentes;
   const sel = (x) => x.filter((i) => i.estado === "seleccionado");
@@ -67,6 +67,7 @@ export function mostrarPlan(plan, raiz) {
   l.push(`  subagentes (${sel(c.agentes).length}): ${sel(c.agentes).map((a) => a.id).join(", ")}`);
   if (c.reglas.length) l.push(`  reglas con paths (${c.reglas.length}): ${c.reglas.map((r) => r.id).join(", ")}`);
   if (c.vendor.length) l.push(`  referencias de proveedor: ${c.vendor.map((v) => v.id).join(", ")}`);
+  if (plan.riesgo) l.push(`  riesgo 2 añadido: ${plan.riesgo.nivel2.length} rutas (package-info.java y API pública de cada módulo) y ${plan.riesgo.contenido2.join(", ").replaceAll("\\", "")}`);
   const excl = [...c.skills, ...c.agentes].filter((x) => x.estado === "excluido");
   for (const x of excl) l.push(`  ✖ ${x.id}: ${x.motivo}`);
   l.push("", "Archivos:");
@@ -86,7 +87,7 @@ export function mostrarPlan(plan, raiz) {
   }
   const r = plan.respuestas;
   const b64 = Buffer.from(r.objetivo || "", "utf8").toString("base64");
-  const extra = ["convencion", "formatoRama", "gestor", "proyecto", "acceso"].filter((k) => r[k]).map((k) => `--${k} '${r[k]}'`).join(" ");
+  const extra = ["convencion", "formatoRama", "idiomaCodigo", "idiomaBrain", "traza", "gestor", "proyecto", "acceso"].filter((k) => r[k]).map((k) => `--${k} '${r[k]}'`).join(" ");
   const cmd = `node ${join(RAIZ_MH, "installer", "mh.mjs")} instalar --carpeta ${raiz} --nivel ${r.nivel} --tipo ${r.tipo} --alcance ${r.alcance} --integracion ${r.integracion} ${extra} --objetivo-b64 ${b64}` +
     `${r.modulos ? ` --modulos ${r.modulos.join(",")}` : ""} --aceptar-plan ${plan.id}`;
   l.push("", "No se ha escrito nada. Para aplicar exactamente este plan:", `  ${cmd}`);
@@ -182,7 +183,7 @@ function uninstall(raiz, confirmar) {
   const claudeMd = join(raiz, "CLAUDE.md");
   if (existsSync(claudeMd)) escribir(claudeMd, leer(claudeMd).replace(new RegExp(`\\n*${BLOQUE_INICIO}[\\s\\S]*?${BLOQUE_FIN}\\n?`), "\n"));
   const gi = join(raiz, ".gitignore");
-  if (existsSync(gi)) escribir(gi, leer(gi).split("\n").filter((l) => ![".mh/tmp/", ".mh/backups/"].includes(l.trim())).join("\n"));
+  if (existsSync(gi)) escribir(gi, leer(gi).split("\n").filter((l) => !IGNORADOS.includes(l.trim())).join("\n"));
   for (const d of ["skills", "agents", "rules"]) {
     const dir = join(raiz, ".claude", d);
     try { if (!readdirSync(dir).length) rmSync(dir, { recursive: true }); } catch {}

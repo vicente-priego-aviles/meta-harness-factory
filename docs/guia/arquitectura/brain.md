@@ -49,7 +49,7 @@ flowchart LR
 - **Al arrancar**, un hook le pasa al agente la rama, el trabajo en curso (`factory/progreso/`) y las últimas entradas del historial. No carga el brain entero.
 - **Antes de decidir**, el agente lee el índice, busca los términos y sus sinónimos y lee solo las notas que encuentra. Si responde con el brain, cita las notas.
 - **Al decidir algo o aprender una lección**, basta con decir «recuérdalo»: la decisión va a `wiki/decisiones/` y la lección a `wiki/lecciones/` como borrador, hasta que la revisas.
-- **Al compactar o cerrar la sesión**, un hook escribe en `raw/sesiones/` un registro con hechos sacados de git: commits, archivos tocados, documentos de la factoría. Nada del contenido de la conversación.
+- **Al compactar o cerrar la sesión**, un hook escribe en `raw/sesiones/` un registro con hechos sacados de git: commits, archivos tocados, documentos de la factoría. Nada del contenido de la conversación. No se versiona (está en el `.gitignore`): se escribe después del último commit y sus hechos ya están en git.
 
 ## Añadir conocimiento
 Para que el brain sepa algo nuevo (la documentación de una API, un artículo, una reunión transcrita), pídeselo al agente: «ingiere esta página en el brain». La skill `brain` sigue estos pasos:

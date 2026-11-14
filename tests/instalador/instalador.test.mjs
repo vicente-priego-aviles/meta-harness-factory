@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const MH = join(RAIZ, "installer", "mh.mjs");
 const RESP = ["--nivel", "tecnico", "--tipo", "microservicios", "--objetivo", "Probar el instalador", "--alcance", "complejo", "--integracion", "ramas",
-  "--convencion", "conventional", "--formatoRama", "{issue}-{tipo}-{slug}", "--gestor", "ninguno"];
+  "--convencion", "conventional", "--formatoRama", "{issue}-{tipo}-{slug}", "--idiomaCodigo", "en", "--idiomaBrain", "es", "--traza", "si", "--gestor", "ninguno"];
 
 function escribir(base, ruta, txt) {
   mkdirSync(dirname(join(base, ruta)), { recursive: true });
@@ -105,7 +105,7 @@ describe("onboarding", () => {
     const claude = readFileSync(join(dir, "CLAUDE.md"), "utf8");
     assert.match(claude, /Instrucciones propias/);
     assert.equal((claude.match(/mh:inicio/g) || []).length, 1);
-    assert.match(readFileSync(join(dir, ".gitignore"), "utf8"), /\.claude\/settings\.json\n\.mh\/tmp\/\n/);
+    assert.match(readFileSync(join(dir, ".gitignore"), "utf8"), /\.claude\/settings\.json\n\.mh\/tmp\/\n\.mh\/backups\/\nbrain\/raw\/sesiones\/\n/);
     assert.doesNotMatch(readFileSync(join(dir, "brain/factory/constitucion.md"), "utf8"), /\{\{/);
     assert.match(readFileSync(join(dir, "brain/factory/constitucion.md"), "utf8"), /Camunda 8/);
     const cfg = JSON.parse(readFileSync(join(dir, ".mh.json"), "utf8"));
@@ -235,6 +235,71 @@ describe("alias en inglés", () => {
       assert.equal(mh(["onboard", "--target", dir, ...RESP, "--accept-plan", id]).status, 0);
       assert.equal(mh(["doctor", "--target", dir]).status, 0);
       assert.match(mh(["sync", "--target", dir]).stdout, /Actualizado con el catálogo/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("Spring Modulith (monolito modular, no hexagonal)", () => {
+  /** Proyecto parecido a PetClinic Modulith: módulos owner y vet; vet solo puede usar owner. */
+  function modulith() {
+    const dir = mkdtempSync(join(tmpdir(), "mh-modulith-"));
+    const J = "src/main/java/org/x/clinica";
+    escribir(dir, "pom.xml", "<project><dependencies><dependency><artifactId>spring-boot-starter-webmvc</artifactId></dependency><dependency><groupId>org.springframework.modulith</groupId><artifactId>spring-modulith-starter-jdbc</artifactId></dependency></dependencies></project>");
+    escribir(dir, `${J}/Clinica.java`, "@SpringBootApplication class Clinica {}");
+    escribir(dir, `${J}/owner/VisitBooked.java`, "public record VisitBooked(int visitId) {}");
+    escribir(dir, `${J}/owner/domain/Owner.java`, "@Entity class Owner {}");
+    escribir(dir, `${J}/vet/package-info.java`, '@ApplicationModule(allowedDependencies = { "owner" })\npackage org.x.clinica.vet;');
+    escribir(dir, `${J}/vet/internal/VetRoster.java`, "class VetRoster {}");
+    escribir(dir, "src/test/java/org/x/clinica/ModularityTests.java", "class ModularityTests {}");
+    execFileSync("git", ["init", "-q", "-b", "main"], { cwd: dir });
+    return dir;
+  }
+
+  test("el plan usa la variante de fronteras entre módulos y marca los contratos como riesgo 2", () => {
+    const dir = modulith();
+    try {
+      const plan = planJson(dir);
+      assert.equal(plan.modulos.ddd.estado, "seleccionado");
+      assert.equal(plan.modulos.ddd.variante, "spring-modulith");
+      const sel = (lista) => lista.filter((x) => x.estado === "seleccionado").map((x) => x.id);
+      assert.ok(sel(plan.componentes.skills).includes("spring-modulith") && !sel(plan.componentes.skills).includes("ddd-hexagonal"));
+      assert.ok(sel(plan.componentes.agentes).includes("revisor-modulos") && !sel(plan.componentes.agentes).includes("revisor-ddd"));
+      assert.deepEqual(plan.componentes.reglas.map((r) => r.id).filter((r) => ["modulos", "dominio"].includes(r)), ["modulos"]);
+      assert.ok(plan.riesgo.nivel2.includes("**/package-info.java"));
+      assert.ok(plan.riesgo.nivel2.includes("src/main/java/org/x/clinica/owner/*.java"));
+
+      const r = mh(["instalar", "--carpeta", dir, ...RESP, "--aceptar-plan", plan.id]);
+      assert.equal(r.status, 0, r.stdout);
+      const constitucion = readFileSync(join(dir, "brain/factory/constitucion.md"), "utf8");
+      assert.match(constitucion, /ApplicationModules\.verify\(\)/);
+      assert.match(constitucion, /idempotente/);
+      assert.doesNotMatch(constitucion, /BPMN|ArchUnit|\{\{/, "sin reglas de procesos ni hexagonales que el proyecto no tiene");
+      assert.match(constitucion, /G2\. Código, commits, issues y PR en inglés; notas del brain en español\./);
+      const claude = readFileSync(join(dir, "CLAUDE.md"), "utf8");
+      assert.match(claude, /`src\/main\/java\/org\/x\/clinica\/vet\/` \| módulo de aplicación \(Spring Modulith; solo puede usar: owner\)/);
+      assert.match(claude, /owner\/` \| módulo de aplicación \(Spring Modulith; sin dependencias declaradas\)/);
+      assert.doesNotMatch(claude, /CLAUDE\.md` de cada módulo/);
+      assert.match(claude, /- Idioma: Código, commits/);
+      const cfg = JSON.parse(readFileSync(join(dir, ".mh.json"), "utf8"));
+      assert.ok(cfg.riesgo.nivel2.includes("**/package-info.java"));
+      assert.equal(cfg.plan.respuestas.idiomaCodigo, "en");
+      assert.equal(cfg.traza, true, "--traza si activa el modo traza");
+      assert.ok(existsSync(join(dir, ".claude/rules/modulos.md")) && !existsSync(join(dir, ".claude/rules/dominio.md")));
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("un proyecto con Camunda conserva la regla P1 de procesos", () => {
+    const dir = proyecto();
+    try {
+      const { id } = planJson(dir);
+      assert.equal(mh(["instalar", "--carpeta", dir, ...RESP, "--aceptar-plan", id]).status, 0);
+      const constitucion = readFileSync(join(dir, "brain/factory/constitucion.md"), "utf8");
+      assert.match(constitucion, /P1\. Un proceso BPMN desplegado es un contrato/);
+      assert.match(constitucion, /C1\. El dominio no depende de Spring/);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

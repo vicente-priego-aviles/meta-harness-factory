@@ -11,7 +11,10 @@ Los scripts están en `.mh/hooks/` y el instalador los conecta en `.claude/setti
 | `PreToolUse` | `Bash` | `bash-previo.mjs` |
 | `PreToolUse` | `Edit`, `Write`, `MultiEdit` | `editar-previo.mjs` |
 | `PostToolUse` | `Edit`, `Write`, `MultiEdit` | `editar-posterior.mjs` |
-| `Stop` | — | `parar.mjs` |
+| `Stop` | — | `parar.mjs` y `traza.mjs` |
+| `PreToolUse` | `Skill`, `Agent` | `traza.mjs` |
+| `PostToolUse` | `Agent`, `Edit`, `Write`, `MultiEdit` | `traza.mjs` |
+| `InstructionsLoaded` | `path_glob_match` | `traza.mjs` |
 | `PreCompact` | — | `compactar.mjs` |
 | `SessionEnd` | — | `sesion-fin.mjs` |
 
@@ -31,6 +34,24 @@ Cada comprobación tiene un **nombre** (el que se usa para desactivarla) y un **
 | `proteger-config` | `editar-previo.mjs` | standard | **pregunta** | editar un archivo protegido (lista abajo) |
 | `aviso-ftd` | `editar-posterior.mjs` | standard | aviso, una vez por sesión | se edita código sin un [FTD](../ayuda/glosario.md#ftd) ni una spec en curso |
 | `aviso-riesgo` | `parar.mjs` | standard | aviso, una vez por conjunto de archivos | hay cambios de riesgo 2 sin spec aprobada para la rama |
+
+## Modo traza
+Con el **[modo traza](../ayuda/glosario.md#modo-traza)** activado, los hooks te enseñan en la conversación, con un icono, qué parte del harness actúa. Lo escriben los hooks, no el modelo: **no cuesta [tokens](../ayuda/glosario.md#token)** y el agente no lo ve. Cada línea queda también en `.mh/tmp/traza.log`.
+
+| Icono | Qué indica | Quién lo escribe |
+|---|---|---|
+| 🛣️ | documento de [carril](../ayuda/glosario.md#carril) creado (FTD, spec, plan, progreso, cierre, revisión) | `traza.mjs` |
+| 🧩 | [skill](../ayuda/glosario.md#skill) que usa el agente | `traza.mjs` |
+| 🤖 | [subagente](../ayuda/glosario.md#subagente) lanzado y terminado | `traza.mjs` |
+| 📏 | regla con `paths` que se ha cargado, y qué archivo la activó | `traza.mjs` (sale con el siguiente aviso) |
+| ⚖️ | riesgo calculado o aviso de riesgo 2 | `riesgo.mjs`, `parar.mjs` |
+| 🛡️ | un hook pide confirmación o bloquea | `bash-previo.mjs`, `editar-previo.mjs` |
+| 🔧 | Maven redirigido a `mvnq` | `bash-previo.mjs` |
+| ✅ / ❌ | resultado de `mvnq` (líneas antes y después del filtro) | `mvnq.mjs` |
+| 🔐 | Claude Code pide permiso para una herramienta (en modo no interactivo, sin respuesta, se deniega) o el modo auto la deniega | `traza.mjs` |
+| ⚠️ | aviso al agente (código sin FTD) | `editar-posterior.mjs` |
+
+Lo que Claude Code no deja mostrar en el momento (las reglas cargadas, el riesgo o `mvnq`, que no son hooks) espera en una cola y sale con el siguiente aviso, como muy tarde al terminar la respuesta. Se activa al instalar o con `node .mh/scripts/traza.mjs on|off`; para una sola sesión, `MH_TRAZA=1 claude`.
 | `worklog` | `compactar.mjs`, `sesion-fin.mjs` | standard | escribe en el brain | al compactar y al cerrar: registro de la sesión en `brain/raw/sesiones/` |
 
 «Pregunta» significa que Claude Code te pide confirmación antes de ejecutar. «Bloquea» significa que el comando no se ejecuta y el agente recibe el motivo y cómo seguir.

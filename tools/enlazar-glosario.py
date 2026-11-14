@@ -56,7 +56,6 @@ TERMINOS = {
     "LSP": r"\bLSP\b",
     "Perfil de hooks": r"\bperfil de hooks\b",
     "Fallo en abierto": r"\bfallo en abierto\b",
-    "Referencia de proveedor": r"\breferencias? de proveedor\b",
     "Onboarding": r"\bonboarding\b",
     "Primero el plan": r"\bprimero el plan\b",
     "Bóveda": r"\bbóvedas?\b",
@@ -66,7 +65,6 @@ TERMINOS = {
     "Mermaid": r"\bMermaid\b",
     "DDD": r"\bDDD\b",
     "Lenguaje ubicuo": r"\blenguaje ubicuo\b",
-    "BPMN / DMN": r"\bBPMN\b",
     "Conventional Commits": r"\bConventional Commits\b",
     "SemVer": r"\bSemVer\b",
     "Keep a Changelog": r"\bKeep a Changelog\b",
@@ -78,16 +76,18 @@ TERMINOS = {
     "Node.js": r"\bNode\.js\b",
     "CLI": r"\bCLIs?\b",
     "Lockfile": r"\blockfiles?\b",
-    "Zeebe": r"\bZeebe\b",
     "Idempotencia": r"\bidempoten(?:cia|te)s?\b",
-    "Instancia en vuelo": r"\binstancias? en vuelo\b",
+    "Spring Modulith": r"\bSpring Modulith\b",
+    "Modo traza": r"\bmodo traza\b",
+    "Módulo de aplicación": r"\bmódulos? de aplicación\b",
+    "Evento de aplicación": r"\beventos? de aplicación\b",
     "jMolecules": r"\bjMolecules\b",
     "Testcontainers": r"\bTestcontainers\b",
     "ArchUnit": r"\bArchUnit\b",
     "PR": r"\bPRs?\b",
     "Worktree": r"\bworktrees?\b",
 }
-SENSIBLE = {"FTD", "SDD", "ASDD", "TDD", "OKF", "ADR", "LLM", "MCP", "LSP", "DDD", "BPMN / DMN", "CLI", "PR"}
+SENSIBLE = {"FTD", "SDD", "ASDD", "TDD", "OKF", "ADR", "LLM", "MCP", "LSP", "DDD", "CLI", "PR"}
 # Tramos que no se tocan: código, enlaces (y su texto), cursivas (traducciones y siglas desarrolladas), HTML, URLs
 PROTEGIDO = re.compile(r"`[^`\n]*`|(?<![*\w])\*(?!\*)[^*\n]+\*(?![*\w])|!?\[[^\]\n]*\]\([^)\n]*\)|<[^>\n]+>|https?://\S+")
 

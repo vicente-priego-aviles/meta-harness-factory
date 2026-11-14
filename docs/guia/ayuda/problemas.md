@@ -38,7 +38,7 @@ Es la comprobación `maven`: el agente debe usar `node .mh/scripts/mvnq.mjs veri
 Con un archivo protegido (reglas de Checkstyle o PMD, tests de [ArchUnit](../ayuda/glosario.md#archunit), la [constitución](../ayuda/glosario.md#constitucion), la configuración del agente), Claude Code te **pregunta** antes de editar. No es un error: si el cambio es lo que quieres, acepta. La idea es que un test que falla se arregla cambiando el código, no la regla que lo comprueba.
 
 ## El agente avisa de un módulo «no instalado»
-El proyecto tiene ahora señales de un módulo que no se instaló (un `.bpmn`, la dependencia de Vaadin…). Ejecuta `mh reevaluar` para verlo; no instala nada hasta que aceptes el plan. Ver [mantenimiento](mantenimiento.md#cuando-el-proyecto-cambia-anadir-modulos).
+El proyecto tiene ahora señales de un módulo que no se instaló (un paquete `dominio/`, la dependencia de [jMolecules](../ayuda/glosario.md#jmolecules)…). Ejecuta `mh reevaluar` para verlo; no instala nada hasta que aceptes el plan. Ver [mantenimiento](mantenimiento.md#cuando-el-proyecto-cambia-anadir-modulos).
 
 ## `tarea.mjs` falla
 | Mensaje o síntoma | Causa | Solución |

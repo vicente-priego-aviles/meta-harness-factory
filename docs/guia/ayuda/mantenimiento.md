@@ -34,10 +34,10 @@ Presupuesto real: CLAUDE.md 31 líneas · orientación 803 B · 8 skills automá
 Úsalo después de instalar, después de actualizar y cuando algo no se comporte como esperas.
 
 ## Cuando el proyecto cambia: añadir módulos
-Si el proyecto empieza a usar algo nuevo (el primer `.bpmn`, la dependencia de Vaadin, un repositorio git donde antes no había), no hace falta que te acuerdes de nada: **el hook de arranque lo detecta** y el agente te lo dice al empezar la sesión:
+Si el proyecto empieza a usar algo nuevo (el primer paquete `dominio/`, la dependencia de [jMolecules](../ayuda/glosario.md#jmolecules), un repositorio git donde antes no había), no hace falta que te acuerdes de nada: **el hook de arranque lo detecta** y el agente te lo dice al empezar la sesión:
 
 ```text
-El proyecto ya tiene señales de camunda (no instalado): propón al usuario ejecutar «mh reevaluar», que no instala nada.
+El proyecto ya tiene señales de ddd (no instalado): propón al usuario ejecutar «mh reevaluar», que no instala nada.
 ```
 
 `reevaluar` vuelve a analizar el proyecto con tus respuestas de la instalación y dice qué módulos propone ahora, sin instalar nada:
@@ -47,9 +47,9 @@ mh reevaluar
 ```
 ```text
 Módulos que ahora tienen señales (no se ha instalado nada):
-  + camunda — 1 modelo BPMN/DMN
+  + ddd — paquetes dominio/
 
-Para verlos en un plan: node ~/meta-harness-factory/installer/mh.mjs instalar --carpeta ~/proyectos/mi-proyecto --modulos java,ddd,camunda
+Para verlos en un plan: node ~/meta-harness-factory/installer/mh.mjs instalar --carpeta ~/proyectos/mi-proyecto --modulos java,git,ddd
 ```
 
 La orden que imprime enseña el plan completo con el módulo nuevo; como siempre, no se aplica hasta que lo aceptas con `--aceptar-plan`. El hook de arranque solo mira señales baratas (archivos de build y sus dependencias, la carpeta `.git`): no recorre el proyecto en cada sesión.

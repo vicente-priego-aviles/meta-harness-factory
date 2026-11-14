@@ -18,14 +18,11 @@ El modelo empieza cada sesión sin recordar nada. El **[brain](../ayuda/glosario
 Al arrancar, un hook le da al agente un resumen de pocas líneas (rama, trabajo en curso, últimas entradas). Lo demás lo consulta él cuando lo necesita, empezando por el índice. Detalle en [El brain en Obsidian](brain.md).
 
 ## 2. Constitución: las reglas fijas
-La **[constitución](../ayuda/glosario.md#constitucion)** (`brain/factory/constitucion.md`) recoge lo que no se negocia en cada cambio: el stack, las reglas de arquitectura, de procesos, de calidad, de seguridad y de git, y la **[definición de terminado](../ayuda/glosario.md#definicion-de-terminado)**. El instalador crea un borrador con el stack detectado; tú lo completas con el agente la primera vez:
+La **[constitución](../ayuda/glosario.md#constitucion)** (`brain/factory/constitucion.md`) recoge lo que no se negocia en cada cambio: el stack, las reglas de arquitectura, de calidad, de seguridad y de git, y la **[definición de terminado](../ayuda/glosario.md#definicion-de-terminado)**. El instalador crea un borrador con el stack detectado; tú lo completas con el agente la primera vez:
 
 ```markdown
 ## 2. Arquitectura
 - C1. El dominio no depende de Spring ni de infraestructura (lo comprueba ArchUnit).
-
-## 3. Procesos
-- P1. Un proceso BPMN desplegado es un contrato: cambiarlo es riesgo 2.
 
 ## 7. Definición de terminado
 - [ ] `node .mh/scripts/mvnq.mjs verify` en verde
@@ -35,7 +32,7 @@ La **[constitución](../ayuda/glosario.md#constitucion)** (`brain/factory/consti
 
 Junto a ella, `brain/factory/revision.md` dice qué cuenta como fallo en una revisión de este proyecto.
 
-Las **reglas** de `.claude/rules/` son el complemento técnico: notas cortas sobre Java, el dominio, Camunda, Vaadin o las migraciones. Todas llevan `paths`, así que Claude Code solo las carga cuando el agente toca archivos que encajan (las de Camunda, por ejemplo, con un `*.bpmn` o un `*Worker*.java`). Y los revisores comprueban la constitución en cada revisión.
+Las **reglas** de `.claude/rules/` son el complemento técnico: notas cortas sobre Java, el dominio o las migraciones. Todas llevan `paths`, así que Claude Code solo las carga cuando el agente toca archivos que encajan (la de migraciones, por ejemplo, con un `*.sql` o un archivo de `db/migration/`). Y los revisores comprueban la constitución en cada revisión.
 
 ## 3. Procesos: cómo se hace un cambio
 Cada petición va por un **[carril](../ayuda/glosario.md#carril)**: responder, [FTD](../ayuda/glosario.md#ftd) o [ASDD](../ayuda/glosario.md#asdd) (ver [uso diario](../uso/index.md)). Cada carril es una skill con sus pasos y deja sus documentos en `brain/factory/`: [specs](../ayuda/glosario.md#spec), planes, FTD, progreso, revisiones y verificaciones.
@@ -60,9 +57,9 @@ Los **hooks** son scripts que Claude Code ejecuta en momentos fijos: al empezar 
 ## 5. Herramientas: lo externo, probado
 Lo que el agente necesita para tocar el mundo exterior está escrito y se puede comprobar:
 
-- **`init.sh`** arranca el entorno y hace un [smoke test](../ayuda/glosario.md#smoke-test). La infraestructura detectada (base de datos, Camunda…) queda comentada para que la actives tú.
+- **`init.sh`** arranca el entorno y hace un [smoke test](../ayuda/glosario.md#smoke-test). La infraestructura detectada (base de datos, Docker Compose…) queda comentada para que la actives tú.
 - **Scripts** en `.mh/scripts/`: `riesgo.mjs` (nivel de riesgo de un cambio), `mvnq.mjs` (Maven con [salida reducida](../tokens/mvnq.md)) y `tarea.mjs` (GitHub Issues, Jira o GitLab).
-- **`brain/wiki/herramientas/`**: una nota por conexión (base de datos, Camunda, una API) con cómo se configura y cómo se prueba.
+- **`brain/wiki/herramientas/`**: una nota por conexión (base de datos, una API) con cómo se configura y cómo se prueba.
 
 Se prefieren las herramientas de línea de comandos (`gh`, `mvn`, `docker`) a los servidores [MCP](../ayuda/glosario.md#mcp): un comando solo cuesta contexto cuando se usa, y un servidor MCP carga sus herramientas en cada sesión.
 
@@ -80,4 +77,4 @@ Todo lo que el agente tiene en contexto se paga en cada mensaje. Por eso cada pi
 | Subagente | en su propio contexto | devuelve un resumen, no todo lo que leyó |
 | Hook | fuera del modelo | solo cuesta lo que escribe al agente |
 
-En PetClinic, tras instalar, lo siempre activo quedó así: `CLAUDE.md` de 31 líneas, orientación de 803 bytes, 8 skills automáticas (1.927 caracteres de descripciones) y ninguna regla siempre activa. `mh comprobar` lo mide en tu proyecto. Más en [ahorro de tokens](../tokens/index.md).
+En PetClinic Modulith, tras instalar, lo siempre activo quedó así: `CLAUDE.md` de 30 líneas, orientación de 811 bytes, 10 skills automáticas (2.463 caracteres de descripciones), 11 subagentes (1.702 caracteres) y ninguna regla siempre activa. `mh comprobar` lo mide en tu proyecto. Más en [ahorro de tokens](../tokens/index.md).

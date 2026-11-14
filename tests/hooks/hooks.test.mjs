@@ -70,6 +70,13 @@ describe("riesgo", () => {
   test("tabla ampliable desde .mh.json", () => {
     assert.equal(riesgo.evaluar(["src/main/java/dominio/Reserva.java"], { riesgo: { nivel2: ["**/dominio/**"] } }).nivel, 2);
   });
+  test("Spring Modulith: la API pública del módulo y package-info.java son contrato (config que escribe el instalador)", () => {
+    const cfg = { riesgo: { nivel2: ["**/package-info.java", "src/main/java/x/owner/*.java"], contenido2: ["@ApplicationModule\\(", "@NamedInterface"] } };
+    assert.equal(riesgo.evaluar(["src/main/java/x/owner/VisitBooked.java"], cfg).nivel, 2, "evento en el paquete raíz del módulo");
+    assert.equal(riesgo.evaluar(["src/main/java/x/vet/package-info.java"], cfg).nivel, 2);
+    assert.equal(riesgo.evaluar(["src/main/java/x/owner/ui/OwnerController.java"], cfg).nivel, 1, "lo interno sigue en 1");
+    assert.equal(riesgo.evaluar(["src/main/java/x/a/B.java"], cfg, () => '+ @NamedInterface("spi")').nivel, 2);
+  });
 });
 
 describe("bash-previo", () => {
@@ -250,6 +257,14 @@ describe("mvnq", () => {
     assert.match(f, /uses or overrides a deprecated API/);
     assert.match(f, /There are test failures/);
   });
+
+  test("no enseña como error el aviso de Surefire al cerrar su JVM en un build en verde", () => {
+    const salida = ["[ERROR] Surefire is going to kill self fork JVM. The exit has elapsed 30 seconds after System.exit(0).",
+      "[INFO] Tests run: 63, Failures: 0, Errors: 0, Skipped: 0", "[INFO] BUILD SUCCESS"].join("\n");
+    const f = mvnq.filtrar(salida);
+    assert.doesNotMatch(f, /Surefire is going to kill/);
+    assert.match(f, /BUILD SUCCESS/);
+  });
 });
 
 describe("parar (aviso de riesgo 2 al terminar)", () => {
@@ -308,5 +323,91 @@ describe("git: convención de commit y ramas protegidas", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("modo traza (ADR-0015)", () => {
+  const conTraza = (dir) => escribir(dir, ".mh.json", JSON.stringify({ traza: true }));
+  const log = (dir) => readFileSync(join(dir, ".mh/tmp/traza.log"), "utf8");
+
+  test("apagado no dice nada ni escribe log", () => {
+    const dir = proyecto();
+    try {
+      const r = ejecutarHook(dir, "traza.mjs", { hook_event_name: "PreToolUse", tool_name: "Skill", tool_input: { skill: "ftd" } });
+      assert.equal(r.codigo, 0);
+      assert.equal(r.texto, "");
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("skills y subagentes salen en el momento; las reglas cargadas esperan en la cola hasta el siguiente aviso", () => {
+    const dir = proyecto();
+    try {
+      conTraza(dir);
+      let r = ejecutarHook(dir, "traza.mjs", { hook_event_name: "PreToolUse", tool_name: "Skill", tool_input: { skill: "ftd" } });
+      assert.equal(r.salida.systemMessage, "🧩 skill ftd");
+      r = ejecutarHook(dir, "traza.mjs", { hook_event_name: "InstructionsLoaded", load_reason: "path_glob_match",
+        file_path: join(dir, ".claude/rules/java.md"), trigger_file_path: join(dir, "src/main/java/App.java") });
+      assert.equal(r.texto, "", "InstructionsLoaded descarta los avisos");
+      r = ejecutarHook(dir, "traza.mjs", { hook_event_name: "PreToolUse", tool_name: "Agent", tool_input: { subagent_type: "revisor-java-spring", description: "Revisar el diff" } });
+      assert.equal(r.salida.systemMessage, "📏 regla java.md (al tocar App.java)\n🤖 subagente revisor-java-spring — Revisar el diff");
+      assert.equal(Object.keys(r.salida).length, 1, "no decide nada sobre la herramienta");
+      assert.match(log(dir), /\d\d:\d\d:\d\d 🧩 skill ftd\n.*📏 regla java\.md/s);
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("documento de carril una vez por sesión; Stop saca la cola (riesgo calculado por el script)", () => {
+    const dir = proyecto();
+    try {
+      conTraza(dir);
+      const ftd = { hook_event_name: "PostToolUse", tool_name: "Write", session_id: "s1", tool_input: { file_path: join(dir, "brain/factory/ftd/2026-11-12-x.md") } };
+      assert.equal(ejecutarHook(dir, "traza.mjs", ftd).salida.systemMessage, "🛣️ FTD: brain/factory/ftd/2026-11-12-x.md");
+      assert.equal(ejecutarHook(dir, "traza.mjs", ftd).texto, "", "la segunda edición no repite");
+      execFileSync("node", [join(dir, ".mh/scripts/riesgo.mjs"), "pom.xml"], { cwd: dir, env: { ...process.env, CLAUDE_PROJECT_DIR: dir } });
+      const r = ejecutarHook(dir, "traza.mjs", { hook_event_name: "Stop" });
+      assert.equal(r.salida.systemMessage, "⚖️ riesgo 2 (1 archivos; por pom.xml)");
+      assert.equal(ejecutarHook(dir, "traza.mjs", { hook_event_name: "Stop" }).texto, "", "la cola queda vacía");
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("permisos pedidos y denegados salen en la traza sin decidir nada", () => {
+    const dir = proyecto();
+    try {
+      conTraza(dir);
+      let r = ejecutarHook(dir, "traza.mjs", { hook_event_name: "PermissionRequest", tool_name: "Bash", tool_input: { command: "node .mh/scripts/tarea.mjs ver 2" } });
+      assert.equal(r.salida.systemMessage, "🔐 permiso pedido: Bash node .mh/scripts/tarea.mjs ver 2");
+      assert.equal(Object.keys(r.salida).length, 1, "no aprueba ni deniega");
+      r = ejecutarHook(dir, "traza.mjs", { hook_event_name: "PermissionDenied", tool_name: "Bash", tool_input: { command: "rm -rf x" }, reason: "[Irreversible Local Destruction]" });
+      assert.equal(r.salida.systemMessage, "🔐 permiso denegado: Bash rm -rf x — [Irreversible Local Destruction]");
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("un hook que decide muestra su línea junto a su decisión (Maven → mvnq)", () => {
+    const dir = proyecto();
+    try {
+      conTraza(dir);
+      const r = ejecutarHook(dir, "bash-previo.mjs", { tool_name: "Bash", tool_input: { command: "./mvnw verify" } });
+      assert.equal(r.salida.hookSpecificOutput.permissionDecision, "deny");
+      assert.match(r.salida.systemMessage, /^🔧 Maven → node \.mh\/scripts\/mvnq\.mjs verify$/);
+      const sin = proyecto();
+      try {
+        const r2 = ejecutarHook(sin, "bash-previo.mjs", { tool_name: "Bash", tool_input: { command: "./mvnw verify" } });
+        assert.equal(r2.salida.systemMessage, undefined, "sin traza, la decisión no cambia y no hay aviso");
+      } finally { rmSync(sin, { recursive: true, force: true }); }
+    } finally { rmSync(dir, { recursive: true, force: true }); }
+  });
+
+  test("interruptor on/off en .mh.json y MH_TRAZA para una sesión", () => {
+    const dir = proyecto();
+    try {
+      escribir(dir, ".mh.json", JSON.stringify({ perfil: "standard" }));
+      const traza = (orden, env = {}) => execFileSync("node", [join(dir, ".mh/scripts/traza.mjs"), orden], { cwd: dir, encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: dir, ...env } });
+      assert.match(traza("on"), /activado/);
+      assert.equal(JSON.parse(readFileSync(join(dir, ".mh.json"), "utf8")).traza, true);
+      assert.equal(JSON.parse(readFileSync(join(dir, ".mh.json"), "utf8")).perfil, "standard", "conserva el resto");
+      traza("off");
+      const r = spawnSync("node", [join(dir, ".mh/hooks/traza.mjs")], { input: JSON.stringify({ hook_event_name: "PreToolUse", tool_name: "Skill", tool_input: { skill: "asdd" } }),
+        env: { ...process.env, CLAUDE_PROJECT_DIR: dir, MH_TRAZA: "1" }, encoding: "utf8" });
+      assert.equal(JSON.parse(r.stdout).systemMessage, "🧩 skill asdd");
+    } finally { rmSync(dir, { recursive: true, force: true }); }
   });
 });

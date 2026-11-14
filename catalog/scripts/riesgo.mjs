@@ -9,6 +9,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { git, leerConfig } from "../hooks/lib/comun.mjs";
+import { ICONOS, trazar } from "../hooks/lib/traza.mjs";
 
 export const TABLA = {
   nivel0: ["brain/**", "docs/**", "**/*.md", "**/*.excalidraw.md", "**/*.base"],
@@ -115,7 +116,10 @@ function main() {
   const rutas = args.filter((a, i) => !a.startsWith("--") && !(iBase >= 0 && i === iBase + 1));
   const base = ramaBase(raiz, baseArg);
   const archivos = rutas.length ? rutas : archivosCambiados(raiz, base);
-  const res = evaluar(archivos, leerConfig(raiz), (r) => textoCambiado(raiz, base, r));
+  const config = leerConfig(raiz);
+  const res = evaluar(archivos, config, (r) => textoCambiado(raiz, base, r));
+  const decide = res.archivos.filter((x) => x.nivel === res.nivel).map((x) => x.ruta.split("/").pop());
+  trazar(raiz, config, ICONOS.riesgo, `riesgo ${res.nivel} (${archivos.length} archivos${decide.length ? `; por ${decide.slice(0, 3).join(", ")}` : ""})`);
   if (json) return console.log(JSON.stringify(res, null, 1));
   console.log(`Riesgo ${res.nivel} (${archivos.length} archivos)`);
   for (const d of res.archivos.filter((x) => x.nivel === res.nivel).slice(0, 15)) console.log(`  ${d.nivel}  ${d.ruta}  — ${d.motivo}`);

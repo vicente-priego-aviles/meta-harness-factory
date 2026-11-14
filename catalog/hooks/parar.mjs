@@ -3,7 +3,8 @@
 // por conjunto de archivos. Detecta también cambios hechos con Bash (sed, scripts), que los hooks de edición no ven.
 // Origen: piloto (Fase 5), un FTD cambió pom.xml con sed y se declaró riesgo 0.
 import { join } from "node:path";
-import { activo, contexto, enAbierto, git, leerConfig, leerEntrada, primeraVez, raizProyecto } from "./lib/comun.mjs";
+import { activo, conAviso, contexto, enAbierto, git, leerConfig, leerEntrada, primeraVez, raizProyecto } from "./lib/comun.mjs";
+import { ICONOS, anunciar } from "./lib/traza.mjs";
 import { archivosCambiados, evaluar, ramaBase, textoCambiado } from "../scripts/riesgo.mjs";
 import { specAprobada } from "./bash-previo.mjs";
 import { createHash } from "node:crypto";
@@ -32,6 +33,7 @@ if (process.argv[1]?.endsWith("parar.mjs")) {
     if (!activo(config, "aviso-riesgo")) return;
     const aviso = avisoRiesgo(raiz, config);
     if (!aviso || !primeraVez(raiz, entrada.session_id, `aviso-riesgo-${aviso.clave}`)) return;
+    conAviso(anunciar(raiz, config, ICONOS.riesgo, "riesgo 2 sin spec aprobada: aviso al agente"));
     contexto("Stop", aviso.texto);
   });
 }

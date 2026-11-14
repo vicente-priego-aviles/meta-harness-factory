@@ -33,7 +33,7 @@
   },
   {
    "id": "escaneo",
-   "texto": "Escaneo del proyecto\npom · BPMN · dominio/\nCLAUDE.md · .gitignore",
+   "texto": "Escaneo del proyecto\npom · dominio/\nCLAUDE.md · .gitignore",
    "color": "azul",
    "fila": 0,
    "col": 2

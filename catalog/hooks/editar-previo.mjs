@@ -2,7 +2,8 @@
 // PreToolUse (Edit|Write|MultiEdit): protege la configuración que no debe relajarse para "hacer pasar" el código.
 // Pide confirmación (ask) en vez de bloquear: a veces el cambio es legítimo.
 import { relative } from "node:path";
-import { activo, decisionPreTool, enAbierto, leerConfig, leerEntrada, raizProyecto } from "./lib/comun.mjs";
+import { activo, conAviso, decisionPreTool, enAbierto, leerConfig, leerEntrada, raizProyecto } from "./lib/comun.mjs";
+import { ICONOS, anunciar } from "./lib/traza.mjs";
 import { globARegex } from "../scripts/riesgo.mjs";
 
 export const PROTEGIDOS = [
@@ -37,6 +38,6 @@ if (process.argv[1]?.endsWith("editar-previo.mjs")) {
     const rel = relative(raiz, ruta).split("\\").join("/");
     const extra = (config.protegidos || []).map((g) => [g, "archivo protegido por el proyecto"]);
     const motivo = comprobar(rel, extra);
-    if (motivo) decisionPreTool("ask", motivo);
+    if (motivo) { conAviso(anunciar(raiz, config, ICONOS.bloqueo, `pide confirmación: ${rel}`)); decisionPreTool("ask", motivo); }
   });
 }

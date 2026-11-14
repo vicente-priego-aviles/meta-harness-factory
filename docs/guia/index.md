@@ -39,7 +39,7 @@ Un modelo de IA sin nada alrededor empieza cada sesión sin memoria, rellena hue
 
     ---
 
-    Los hooks calculan el riesgo de cada cambio, frenan los comandos peligrosos y exigen spec y revisión antes de integrar lo delicado (procesos BPMN, migraciones, seguridad).
+    Los hooks calculan el riesgo de cada cambio, frenan los comandos peligrosos y exigen spec y revisión antes de integrar lo delicado (migraciones, dependencias, seguridad).
 
     [:octicons-arrow-right-24: Riesgo y revisión](uso/riesgo-revision.md)
 
@@ -61,7 +61,7 @@ El **catálogo** contiene skills, subagentes, hooks, reglas y plantillas. El **i
 
 ## Para quién es
 
-Para quien desarrolla con **Claude Code** y quiere que el agente trabaje con método en proyectos **Java con Spring Boot**, **DDD hexagonal**, **Camunda 8 / BPMN** y **Vaadin**, usando **Obsidian** como segundo cerebro. El núcleo (memoria, carriles, revisión, hooks) sirve para cualquier proyecto; los módulos de stack se instalan solo si el proyecto los usa.
+Para quien desarrolla con **Claude Code** y quiere que el agente trabaje con método en proyectos **Java con Spring Boot** y **DDD**, usando **Obsidian** como segundo cerebro. El núcleo (memoria, carriles, revisión, hooks) sirve para cualquier proyecto; los módulos de stack se instalan solo si el proyecto los usa.
 
 !!! tip "¿Por dónde empiezo?"
     Si es tu primera vez, sigue el [tutorial](tutorial/index.md): en unos minutos tendrás el harness instalado en un proyecto y habrás hecho tu primer cambio con él.

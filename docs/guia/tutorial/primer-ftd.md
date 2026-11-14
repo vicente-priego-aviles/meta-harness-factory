@@ -1,116 +1,126 @@
 # Tu primer cambio (FTD)
 
-**[meta-harness-factory](../ayuda/glosario.md#meta-harness)** organiza el trabajo en tres **[carriles](../ayuda/glosario.md#carril)**: caminos de trabajo con sus pasos fijos, como los carriles de una autopista. El agente elige uno según lo clara que esté la petición, te lo dice en una línea y tú puedes corregirlo. Un **[FTD](../ayuda/glosario.md#ftd)** (*Fast Track Development*, «desarrollo por la vía rápida») es el carril para cambios **claros y sin decisiones abiertas**: corregir un fallo acotado, quitar una duplicación, añadir un campo. Aquí lo recorres entero con un cambio **real** en Spring PetClinic; todo lo que ves en esta página salió de esa ejecución.
+**[meta-harness-factory](../ayuda/glosario.md#meta-harness)** organiza el trabajo en tres **[carriles](../ayuda/glosario.md#carril)**: caminos de trabajo con sus pasos fijos, como los carriles de una autopista. El agente elige uno según lo clara que esté la petición, te lo dice en una línea y tú puedes corregirlo. Un **[FTD](../ayuda/glosario.md#ftd)** (*Fast Track Development*, «desarrollo por la vía rápida») es el carril para cambios **claros y sin decisiones abiertas**: corregir un fallo acotado, quitar una duplicación, cambiar cómo se ve una pantalla. Aquí lo recorres entero con un cambio **real** en Spring PetClinic Modulith; todo lo que ves en esta página salió de esa ejecución.
 
 ## El cambio
-En PetClinic, la comprobación de que **la fecha de nacimiento de una mascota no está en el futuro** está duplicada en `PetController`, una vez en el alta y otra en la edición. Lo natural es que viva en `PetValidator`, junto al resto de validaciones de la mascota.
+En la ficha de un dueño, las visitas de cada mascota salen en una tabla, de la más antigua a la más reciente. La tarea pide una **línea temporal**: la más reciente arriba, una marca para las visitas futuras y un texto cuando una mascota no tiene ninguna. Sin tocar el modelo ni la base de datos.
+
+| Antes | Después |
+|---|---|
+| ![Ficha de Jean Coleman antes del cambio: las visitas de Max y Samantha en una tabla de fecha y descripción, de la más antigua a la más reciente](../assets/capturas/c10-antes.png) | ![La misma ficha después: cada mascota con una línea vertical de visitas, la más reciente arriba y las futuras con la etiqueta «Upcoming»](../assets/capturas/c10-despues.png) |
 
 ## 1. Pide el cambio
-En una sesión de Claude Code dentro de `spring-petclinic`:
+La tarea es la [issue #2](https://github.com/vicente-priego-aviles/meta-harness-petclinic/issues/2) del repositorio de pruebas. En una sesión de Claude Code dentro del proyecto basta con:
 
 ```text
-La comprobación de que la fecha de nacimiento de una mascota no está en el futuro está
-duplicada en PetController (alta y edición). Muévela a PetValidator con su test, sin cambiar
-el comportamiento. Al terminar, haz el commit.
+Empieza la tarea #2
 ```
 
-> [!tip] Con un gestor de tareas
-> Si el proyecto tiene GitHub Issues, Jira o GitLab configurado, basta con «Empieza la tarea #42»: el agente la lee, la marca en curso y la enlaza al trabajo. Lo verás en [uso diario](../uso/ftd.md).
+El agente lee la issue con el script `tarea`, la comenta y la enlaza a la rama. Sin [gestor de tareas](../ayuda/glosario.md#gestor-de-tareas), pega el texto de la issue en lugar del número.
 
 ## 2. Qué hace el agente
-| Paso | Lo que hizo en PetClinic | Pieza |
+| Paso | Lo que hizo en PetClinic Modulith | Pieza |
 |---|---|---|
-| Elige carril | FTD: cambio claro, sin decisiones abiertas | orientación |
-| Calcula el [riesgo](../ayuda/glosario.md#riesgo) previsto | `riesgo.mjs` con los archivos que va a tocar → **1** (código normal) | script `riesgo` |
-| Crea la rama | `refactor/birthdate-futura-petvalidator`, con el formato del proyecto | [skill](../ayuda/glosario.md#skill) `git` |
-| Escribe el FTD | `brain/factory/ftd/2026-11-09-birthdate-futura-en-petvalidator.md` | skill `ftd` |
-| Test primero | `validateWithFutureBirthDate` **falla** antes del cambio (`expected: <true> but was: <false>`) | [TDD](../ayuda/glosario.md#tdd) |
-| Cambio mínimo | la regla pasa a `PetValidator`; se quitan los dos bloques del controlador | — |
-| Controles | `node .mh/scripts/mvnq.mjs verify` → **84 tests, 0 fallos**; el agente lee 4 líneas en lugar de 823 | [`mvnq`](../tokens/mvnq.md) |
-| Revisión | **un** revisor de [contexto limpio](../ayuda/glosario.md#revisor-de-contexto-limpio) (riesgo 1, terreno Java): `revisor-java-spring` | skill `revision` |
-| Evidencia y cierre | FTD con evidencia, `estado: hecho`; commit con código, tests y documentos | skills `ftd` y `git` |
+| Lee la tarea | `node .mh/scripts/tarea.mjs ver 2` | [skill](../ayuda/glosario.md#skill) `tareas` |
+| Elige carril | «Carril: FTD. El cambio está claro, solo toca la vista y no hay decisiones abiertas.» | orientación |
+| Calcula el [riesgo](../ayuda/glosario.md#riesgo) previsto | `riesgo.mjs` con la plantilla → **1** (código normal); lo recalcula al crecer el cambio y sigue en 1 | script `riesgo` |
+| Crea la rama | `feat/2-visit-timeline`, con el formato del proyecto (`{tipo}/{issue}-{slug}`) | skill `git` |
+| Escribe el FTD | `brain/factory/ftd/2026-11-14-linea-temporal-visitas.md` | skill `ftd` |
+| Test primero | `PetVisitsOrderTests` y tres casos en `OwnerControllerTests` **fallan** antes del código | [TDD](../ayuda/glosario.md#tdd) |
+| Cambio mínimo | un método de solo lectura en `Pet` que ordena las visitas, la plantilla, unas reglas de CSS y dos mensajes nuevos | — |
+| Controles | `node .mh/scripts/mvnq.mjs verify` → **70 tests, 0 fallos**; el agente lee 3 líneas en lugar de 891 | [`mvnq`](../tokens/mvnq.md) |
+| Revisión | **un** revisor de [contexto limpio](../ayuda/glosario.md#revisor-de-contexto-limpio) (riesgo 1): `revisor-correccion` | skill `revision` |
+| Evidencia y cierre | FTD con evidencia, `estado: hecho`; commit con código, tests y documentos; **sin** push | skills `ftd` y `git` |
+
+> [!note] Algo que no estaba en la tarea
+> Al añadir los dos mensajes nuevos, falló `I18nPropertiesSyncTest`: PetClinic exige las mismas claves en sus 8 idiomas. El agente amplió el alcance, lo anotó en el FTD y avisó de que **nadie nativo ha revisado las traducciones**.
 
 > [!warning] Si el cambio fuera de riesgo 2
-> Un cambio en un `.bpmn`, una migración de base de datos, la seguridad o el `pom.xml` es **riesgo 2**: el agente propone **[ASDD](../ayuda/glosario.md#asdd)**, una [spec](../ayuda/glosario.md#spec) que apruebas tú antes de tocar código. Por eso el riesgo se calcula **antes** de empezar, con los archivos que se van a tocar.
+> Una migración de base de datos, la seguridad, el `pom.xml` o, en un proyecto con [Spring Modulith](../ayuda/glosario.md#spring-modulith), la API pública de un módulo es **riesgo 2**: el agente propone **[ASDD](../ayuda/glosario.md#asdd)**, una [spec](../ayuda/glosario.md#spec) que apruebas tú antes de tocar código. Por eso el riesgo se calcula **antes** de empezar, con los archivos que se van a tocar. Mostrar el veterinario de cada visita, por ejemplo, cruza los módulos `owner` y `vet`: queda fuera de este FTD.
 
 ## 3. El documento FTD
-Así quedó, tal cual lo escribió el agente:
+Así quedó, tal cual lo escribió el agente (sin el [frontmatter](../ayuda/glosario.md#frontmatter) de metadatos):
 
 ```markdown
----
-type: FTD
-title: Mover la validación de fecha de nacimiento futura a PetValidator
-estado: hecho
-rama: refactor/birthdate-futura-petvalidator
-riesgo: 1
----
 ## Intención
-Eliminar la duplicación en processCreationForm y processUpdateForm. Mismo código de error
-(typeMismatch.birthDate) sobre el campo birthDate.
+Tarea #2: sustituir la tabla de visitas de ownerDetails.html por una línea temporal vertical.
+Sin cambios en el esquema ni en la base de datos.
+
+## Alcance
+- Pet.getVisitsNewestFirst(): visitas derivadas, orden de fecha descendente (no persistente).
+- ownerDetails.html: línea temporal con fecha y descripción, marca distinta para visitas futuras
+  y texto cuando no hay visitas.
+- Claves i18n nuevas (noVisits, upcomingVisit) en los 8 idiomas: I18nPropertiesSyncTest exige
+  las mismas claves en todos los ficheros (alcance ampliado al descubrirlo; traducciones sin
+  validar por nativos).
+- Visitas sin fecha (visit_date es nullable): se muestran al final y no se marcan como futuras.
 
 ## Checklist
-- [x] El validador rechaza una fecha futura con código typeMismatch.birthDate
-      — prueba: PetValidatorTests#validateWithFutureBirthDate
-- [x] Hoy y fechas pasadas siguen siendo válidas — prueba: PetValidatorTests#validate
-- [x] Alta y edición con fecha futura siguen dando el mismo error — prueba: PetControllerTests (futureBirthDate)
+- [x] Orden más reciente primero — prueba: PetVisitsOrderTests
+- [x] Visita futura marcada y pasada sin marca — prueba: OwnerControllerTests (HTML de /owners/{id})
+- [x] Mascota sin visitas muestra el texto — prueba: OwnerControllerTests
+- [x] Visita sin fecha no rompe la ficha — prueba: OwnerControllerTests.testShowOwnerWithUndatedVisitStillRenders
 - [x] Controles: node .mh/scripts/mvnq.mjs verify
 
 ## Evidencia
-> [!success] Validador y controlador
-> El test validateWithFutureBirthDate falló antes del cambio (expected: <true> but was: <false>).
-> Tras el cambio, mvnq verify: Tests run: 84, Failures: 0, Errors: 0, BUILD SUCCESS. Los tests
-> existentes de PetControllerTests siguen en verde sin modificarlos.
-
-## Notas
-El error de fecha futura ahora se añade antes que el del nombre duplicado; el formulario muestra
-errores por campo, así que no cambia lo visible.
+> [!success] Comportamiento
+> Los tests nuevos fallaron antes del código y los de fecha nula fallaron con NPE antes de la
+> corrección. Tras el cambio: mvnq verify → Tests run: 70, Failures: 0, Errors: 0, BUILD SUCCESS.
+> La comprobación es con MockMvc sobre el HTML renderizado; no se ha abierto la app en un
+> navegador (no ejecutado).
 ```
 
-Fíjate en tres cosas: **cada punto lleva su prueba**, la evidencia dice **qué falló antes y qué pasa después**, y el agente anotó un efecto secundario sutil (el orden de los errores) en vez de callarlo.
+Fíjate en tres cosas: **cada punto lleva su prueba**, la evidencia dice **qué falló antes y qué pasa después**, y el agente deja escrito **lo que no comprobó** (la app en el navegador) en vez de darlo por hecho. Las capturas de arriba son esa comprobación, hecha después.
 
 ## 4. La revisión
-Un [subagente](../ayuda/glosario.md#subagente) que **no vio cómo se escribió el código** revisó el cambio. Su registro:
+Un [subagente](../ayuda/glosario.md#subagente) que **no vio cómo se escribió el código** revisó el cambio y encontró dos cosas:
 
 | # | Hallazgo | Gravedad | Cierre |
 |---|---|---|---|
-| H1 | `PetValidator.java:61` cambia el orden de errores en el BindingResult | baja | intencionado: la vista muestra errores por campo |
-| H2 | Faltaban tests de «hoy es válido» y «fecha nula da un solo error» | baja | arreglado: añadidos en `PetValidatorTests` |
+| H1 | `Comparator.comparing(Visit::getDate)` y la marca de futura fallan si una visita no tiene fecha: la ficha del dueño daría un error 500 | alta | arreglado: test primero, y las visitas sin fecha van al final |
+| H2 | El FTD decía «solo inglés», pero el cambio toca los 8 idiomas | baja | arreglado: alcance corregido en el FTD |
 
-Con riesgo 1 revisa **uno**; con riesgo 2 revisa un panel completo y cada hallazgo se verifica contra el código antes de corregir nada.
+Con riesgo 1 revisa **uno**; con riesgo 2 revisa un panel completo y cada hallazgo se verifica contra el código antes de corregir nada. Si la mascota no tiene visitas, la ficha lo dice:
+
+![Ficha de George Franklin: su mascota Leo no tiene visitas y en su lugar aparece «No visits yet»](../assets/capturas/c10-despues-sin-visitas.png)
 
 ## 5. El commit
 ```text
-refactor(owner): mover validación de fecha de nacimiento futura a PetValidator
+✨ feat(owner): show visits as a timeline on the owner page
 
-La comprobación estaba duplicada en PetController (alta y edición).
-Se centraliza en PetValidator con el mismo campo y código de error
-(typeMismatch.birthDate), sin cambiar el comportamiento. Se añaden
-tests del validador, el FTD y el registro de revisión.
+Render each pet's visits as a vertical timeline, newest first, with a
+distinct marker for upcoming visits and a text when there are none.
+Visits without a date are listed last instead of breaking the page.
+i18n keys are added to every language because I18nPropertiesSyncTest
+requires identical keys.
+
+Refs: #2
 ```
 ```text
- brain/factory/ftd/2026-11-09-birthdate-futura-en-petvalidator.md | 39 +++
- brain/factory/revisiones/birthdate-futura-en-petvalidator.md     | 11 +
- src/main/java/…/owner/PetController.java                         | 11 -
- src/main/java/…/owner/PetValidator.java                          |  5 +
- src/test/java/…/owner/PetValidatorTests.java                     | 39 +++
+ brain/factory/ftd/2026-11-14-linea-temporal-visitas.md | 44 ++++
+ src/main/java/…/owner/domain/Pet.java                  | 12 +
+ src/main/resources/messages/messages*.properties (×9)  | 18 +
+ src/main/resources/static/resources/css/petclinic.css  |  9 +
+ src/main/resources/templates/owners/ownerDetails.html  | 29 +-
+ src/test/java/…/owner/domain/PetVisitsOrderTests.java  | 59 ++++
+ src/test/java/…/owner/ui/OwnerControllerTests.java     | 45 ++++
 ```
-El código, los tests y los documentos del [brain](../ayuda/glosario.md#brain) van **en el mismo commit**. El mensaje sigue la convención del proyecto; si no la siguiera, el [hook](../ayuda/glosario.md#hook) lo rechazaría y explicaría el formato. Y si se intenta hacer commit directamente en `main` ([rama protegida](../ayuda/glosario.md#rama-protegida)), el hook lo impide.
-
-> [!note] Lo que pasó de verdad
-> En esta ejecución el agente dejó la rama para el final: al hacer el commit en `main`, el hook lo bloqueó y el agente propuso crear la rama en vez de saltarse la protección. A raíz de esta prueba, la skill `ftd` crea la rama **al empezar** cuando la rama base está protegida.
+El código, los tests y los documentos del [brain](../ayuda/glosario.md#brain) van **en el mismo commit**. El mensaje sigue la convención del proyecto (aquí, [Conventional Commits](../ayuda/glosario.md#conventional-commits) con gitmoji, en inglés como el código); si no la siguiera, el [hook](../ayuda/glosario.md#hook) lo rechazaría y explicaría el formato. El agente **no hizo push ni abrió la [PR](../ayuda/glosario.md#pr)**: lo propuso y esperó. La PR es la [#4](https://github.com/vicente-priego-aviles/meta-harness-petclinic/pull/4).
 
 ## 6. Lo que queda en el brain
-- El **FTD** con su evidencia y el **registro de revisión**, versionados con el código.
-- Un **registro de la sesión** en `brain/raw/sesiones/` (commits, archivos, documentos tocados), escrito automáticamente al compactar o cerrar la sesión.
+- El **FTD** con su evidencia, versionado con el código.
+- Un **registro de la sesión** en `brain/raw/sesiones/` (commits, archivos, documentos tocados), escrito automáticamente al compactar o cerrar la sesión. Se queda en tu disco, fuera de git: se escribe después del último commit.
 - Si salió una decisión o una lección: «recuérdalo», y el agente la guarda en el brain.
 
 ## Cuánto costó
-| Parte | Tiempo | Coste |
-|---|---|---|
-| Del pedido al cambio verificado y revisado | 80 s | 0,36 USD |
-| Rama y commit (en la misma sesión, retomada) | — | 0,44 USD |
+| Parte | Turnos | Tiempo | Coste |
+|---|---|---|---|
+| De «Empieza la tarea #2» al commit revisado | 17 | 2 min 9 s | 0,65 USD |
 
-Medido con Sonnet 5.5 a tarifas de la API ([qué significa ese precio](../uso/ftd.md#cuanto-cuesta)). Retomar una sesión vuelve a cargar todo su contexto; hacerlo todo en la misma conversación sale más barato. Más datos en [ahorro de tokens](../tokens/index.md).
+Medido con Sonnet 5.5 a tarifas de la API ([qué significa ese precio](../uso/ftd.md#cuanto-cuesta)), en modo no interactivo con las ediciones aceptadas. Más datos en [ahorro de tokens](../tokens/index.md).
+
+> [!info] El mismo pedido sin **meta-harness-factory**
+> En un clon sin [harness](../ayuda/glosario.md#harness), con el texto de la issue y los mismos permisos: **0,35 USD, 29 turnos, 1 min 53 s**. Más barato, pero sin tests nuevos, sin rama, sin commit y sin revisión. Su plantilla tiene el fallo de la visita sin fecha que aquí encontró el revisor, y no ejecutó `verify` (pasa al lanzarlo después). El harness cuesta más porque hace más: tests primero, un revisor y el cierre con evidencia.
 
 > [!success] Ya sabes trabajar con **meta-harness-factory**
 > Lo siguiente: los [carriles de uso diario](../uso/index.md) en detalle, sobre todo **ASDD** para cambios con decisiones.

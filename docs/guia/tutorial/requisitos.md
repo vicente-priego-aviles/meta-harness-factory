@@ -14,7 +14,6 @@ El proyecto donde instalas debe ser un **repositorio git**: el riesgo de cada ca
 | Si tu proyecto usa… | Necesitas |
 |---|---|
 | Java con Maven | JDK y, preferiblemente, Maven Wrapper (`mvnw`) en el proyecto |
-| Camunda 8, [BPMN](../ayuda/glosario.md#bpmn-dmn) | nada más: la documentación oficial de Camunda viene incluida como referencia |
 | Docker Compose para la infraestructura | Docker, si quieres que `init.sh` la levante |
 
 ## Opcionales

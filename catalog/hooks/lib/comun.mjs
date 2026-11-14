@@ -45,8 +45,12 @@ export function git(raiz, args) {
   }
 }
 
+// Aviso visible para el usuario (modo traza) que sale con la respuesta JSON del hook; el modelo no lo ve.
+let avisoSistema = null;
+export function conAviso(texto) { if (texto) avisoSistema = texto; }
+
 export function salirJson(obj) {
-  process.stdout.write(JSON.stringify(obj));
+  process.stdout.write(JSON.stringify(avisoSistema ? { ...obj, systemMessage: avisoSistema } : obj));
   process.exit(0);
 }
 

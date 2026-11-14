@@ -40,6 +40,7 @@ Así queda tras instalar en un proyecto con GitHub Issues (la parte `plan` y `ge
 | `desactivados` | `[]` | comprobaciones que no quieres, por nombre (lista en [hooks](hooks.md#comprobaciones)) |
 | `protegidos` | `[]` | rutas o patrones de tu proyecto que el agente no debe editar sin preguntar, por ejemplo `"**/reglas-negocio.yml"` |
 | `brain` | `"brain"` | carpeta del [brain](../ayuda/glosario.md#brain) |
+| `traza` | tu respuesta al instalar | `true` activa el [modo traza](hooks.md#modo-traza); se cambia con `node .mh/scripts/traza.mjs on\|off` |
 | `riesgo.nivel2` | `[]` | patrones de ruta que pasan a riesgo 2, por ejemplo `"**/pagos/**"` |
 | `riesgo.nivel0` | `[]` | patrones que pasan a riesgo 0, por ejemplo `"**/*.adoc"` |
 | `riesgo.contenido2` | `[]` | expresiones regulares: si **lo que cambia** en un archivo las contiene, el archivo pasa a riesgo 2 |

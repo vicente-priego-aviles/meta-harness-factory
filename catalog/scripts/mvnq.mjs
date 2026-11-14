@@ -6,6 +6,8 @@ import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { leerConfig } from "../hooks/lib/comun.mjs";
+import { ICONOS, trazar } from "../hooks/lib/traza.mjs";
 
 const MAX_LINEAS = 80;
 const CONSERVAR = [
@@ -20,6 +22,8 @@ const DESCARTAR = [
   /^\[WARNING\]\s+Parameter '.*' is deprecated/, /Unknown keyword/,
   /^\[ERROR\]\s*$/, /-> \[Help \d+\]/, /\[Help \d+\] http/, /Re-run Maven using/, /re-run Maven with the -e switch/,
   /For more information about the errors and possible solutions/, /See dump files/,
+  // Surefire avisa así cuando la JVM de tests tarda en cerrarse, aunque todo haya ido bien
+  /Surefire is going to kill self fork JVM/,
 ];
 
 /** Filtra la salida de Maven. Limita las trazas a 3 líneas `at …` seguidas. */
@@ -59,6 +63,8 @@ function main() {
     const filtrado = filtrar(todo);
     const n = todo.split("\n").length;
     console.log(filtrado || "(sin errores ni resumen en la salida)");
+    trazar(raiz, leerConfig(raiz), codigo === 0 ? ICONOS.ok : ICONOS.fallo,
+      `mvnq ${args.join(" ")} → código ${codigo} (${n} líneas → ${filtrado ? filtrado.split("\n").length : 0})`);
     console.log(`\n[mvnq] ${mvn} ${args.join(" ")} → código ${codigo}. Log completo (${n} líneas): .mh/tmp/mvn-ultimo.log`);
     process.exit(codigo ?? 1);
   });

@@ -18,6 +18,12 @@ export const PREGUNTAS = [
     conventional: "Conventional Commits: fix(pagos): corregir …", "conventional-gitmoji": "Conventional + gitmoji: 🐛 fix(pagos): corregir …" } },
   { id: "formatoRama", texto: "¿Qué formato tienen las ramas?", opciones: {
     "{issue}-{tipo}-{slug}": "57-fix-reset-cliente", "{tipo}/{issue}-{slug}": "fix/57-reset-cliente", "{tipo}/{slug}": "fix/reset-cliente (sin número de tarea)" } },
+  { id: "idiomaCodigo", texto: "¿En qué idioma van el código, los commits, las issues y los PR?", opciones: {
+    en: "Inglés", es: "Español" } },
+  { id: "idiomaBrain", texto: "¿En qué idioma escribe el agente las notas del brain (FTD, specs, revisiones)?", opciones: {
+    es: "Español", en: "Inglés" } },
+  { id: "traza", texto: "¿Activar el modo traza? Muestra con iconos qué carril, skills, subagentes, reglas y hooks actúan (sin coste de tokens).", opciones: {
+    si: "Sí (recomendado al empezar; se apaga con node .mh/scripts/traza.mjs off)", no: "No" } },
   { id: "gestor", texto: "¿De qué gestor salen las tareas?", opciones: {
     ninguno: "Ninguno", github: "GitHub Issues (CLI gh)", jira: "Jira (CLI acli)", gitlab: "GitLab Issues (CLI glab)" } },
   { id: "proyecto", texto: "Clave del proyecto en Jira (p. ej. RES)", libre: true, si: (r) => r.gestor === "jira" },

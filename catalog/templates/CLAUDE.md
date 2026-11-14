@@ -20,8 +20,7 @@ node .mh/scripts/riesgo.mjs              # nivel de riesgo del cambio actual
 ## Reglas
 - Carriles Responder · FTD · ASDD (ver orientación de inicio de sesión; glosario en brain/wiki/factoria/glosario.md).
 - Constitución: brain/factory/constitucion.md. Qué cuenta como fallo: brain/factory/revision.md.
-- Maven siempre con `node .mh/scripts/mvnq.mjs` (salida filtrada).
-- Detalle por módulo en el `CLAUDE.md` de cada módulo (se carga al trabajar en él).
+- Maven siempre con `node .mh/scripts/mvnq.mjs` (salida filtrada).{{IDIOMA_REGLA}}
 
 # Compact instructions
 Conserva: carril y documento FTD/spec en curso, tarea actual, decisiones nuevas, controles ejecutados y pendientes.

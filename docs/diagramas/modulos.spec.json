@@ -12,7 +12,7 @@
   {"id": "git", "texto": "git\ngit · release", "color": "azul", "fila": 1, "col": 0},
   {"id": "java", "texto": "java\njava-spring-boot · secuencia\nrevisor-java-spring\nreparador-compilacion", "color": "azul", "fila": 1, "col": 1},
   {"id": "tareas", "texto": "tareas\nGitHub · Jira · GitLab\ntarea.mjs", "color": "azul", "fila": 1, "col": 2},
-  {"id": "ddd", "texto": "ddd\nddd-hexagonal\nrevisor-ddd", "color": "azul", "fila": 2, "col": 0},
+  {"id": "ddd", "texto": "ddd\nddd-hexagonal · revisor-ddd\no, con Spring Modulith:\nspring-modulith · revisor-modulos", "color": "azul", "fila": 2, "col": 0},
   {"id": "camunda", "texto": "camunda\ncamunda-8 + referencias\nrevisor-camunda", "color": "azul", "fila": 2, "col": 1},
   {"id": "vaadin", "texto": "vaadin\nvaadin-flow", "color": "azul", "fila": 2, "col": 2}
  ],

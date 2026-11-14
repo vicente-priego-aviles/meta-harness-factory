@@ -5,6 +5,9 @@ import {
   CATALOGO, VERSION, anadirLineas, copiarDir, escribir, existe, hashArchivo, hoy, leer, listar, rellenar,
 } from "./util.mjs";
 
+/** Líneas que el instalador añade al .gitignore del proyecto (y quita al desinstalar). */
+export const IGNORADOS = [".mh/tmp/", ".mh/backups/", "brain/raw/sesiones/"];
+
 export const BLOQUE_INICIO = "<!-- mh:inicio -->";
 export const BLOQUE_FIN = "<!-- mh:fin -->";
 
@@ -51,11 +54,25 @@ function valoresPlantilla(esc, plan) {
     s.springBoot && "- Spring Boot (versión en el pom.xml)",
     s.camunda && "- Camunda 8 (versión en el pom.xml)",
     s.vaadin && "- Vaadin Flow",
+    s.springModulith && "- Spring Modulith (módulos de aplicación y eventos)",
     s.jmolecules && "- jMolecules (DDD) + ArchUnit",
     s.flyway && "- Flyway (migraciones)",
   ].filter(Boolean).join("\n") || "- <completar con el agente>";
+  const depende = (m) => (m.depende === null ? "sin dependencias declaradas" : m.depende.length ? `solo puede usar: ${m.depende.join(", ")}` : "no depende de ningún módulo");
   const mapa = (esc.modulosMaven.length ? esc.modulosMaven.map((m) => `| \`${m}/\` | módulo Maven |`)
+    : esc.modulosAplicacion?.length ? esc.modulosAplicacion.map((m) => `| \`${m.ruta}/\` | módulo de aplicación (Spring Modulith; ${depende(m)}) |`)
     : esc.paquetes.length ? esc.paquetes.map((p) => `| \`${p}/\` | paquete |`) : ["| `src/` | código |"]).join("\n");
+  const ddd = plan.modulos?.ddd;
+  const arquitectura = [
+    ddd?.variante === "spring-modulith" && "- C1. Los módulos de aplicación solo se usan entre sí por su API pública (paquete raíz del módulo o `@NamedInterface`) y por eventos; nada de `internal/` desde fuera. Lo comprueba `ApplicationModules.verify()` en el test de modularidad.",
+    ddd?.variante === "spring-modulith" && "- C2. Quien escucha un evento de otro módulo es idempotente: el registro de publicaciones puede reentregarlo.",
+    ddd?.estado === "seleccionado" && !ddd.variante && `- C1. El dominio no depende de Spring ni de infraestructura${s.jmolecules || s.archunit ? " (lo comprueba ArchUnit)" : ""}.`,
+  ].filter(Boolean).join("\n") || "- <completar con el agente: reglas de arquitectura del proyecto>";
+  const procesos = plan.modulos?.camunda?.estado === "seleccionado"
+    ? "- P1. Un proceso BPMN desplegado es un contrato: cambiarlo es riesgo 2." : "- <sin reglas de procesos; completar si hace falta>";
+  const NOMBRE_IDIOMA = { es: "español", en: "inglés" };
+  const { idiomaCodigo: ic, idiomaBrain: ib } = plan.respuestas;
+  const idioma = ic && ib ? `Código, commits, issues y PR en ${NOMBRE_IDIOMA[ic]}; notas del brain en ${NOMBRE_IDIOMA[ib]}.` : "";
   const comandos = [
     "node .mh/scripts/mvnq.mjs verify                  # build y tests (salida filtrada)",
     esc.modulosMaven[0] ? `node .mh/scripts/mvnq.mjs verify -pl ${esc.modulosMaven[0]} -am   # un módulo` : null,
@@ -68,7 +85,8 @@ function valoresPlantilla(esc, plan) {
     ? '# Smoke test: ajusta el puerto de tu aplicación\n# curl -fsS http://localhost:8080/actuator/health'
     : "# Añade aquí un smoke test (p. ej. curl a un endpoint de salud).";
   return { NOMBRE: esc.nombre, DESCRIPCION: plan.respuestas.objetivo, FECHA: hoy(), VERSION, STACK: stack,
-    MAPA: mapa, COMANDOS: comandos, INFRA: infra, SMOKE: smoke };
+    MAPA: mapa, COMANDOS: comandos, INFRA: infra, SMOKE: smoke, ARQUITECTURA: arquitectura, PROCESOS: procesos,
+    IDIOMA_REGLA: idioma ? `\n- Idioma: ${idioma}` : "", IDIOMA_CONSTITUCION: idioma ? `\n- G2. ${idioma}` : "" };
 }
 
 export function aplicar(raiz, plan, esc) {
@@ -174,9 +192,9 @@ export function aplicar(raiz, plan, esc) {
     escritos.push(`brain/${rel}`);
   }
 
-  // 6. .gitignore
+  // 6. .gitignore (los worklogs de sesión se escriben tras el último commit: no se versionan)
   respaldar(".gitignore");
-  if (anadirLineas(join(raiz, ".gitignore"), [".mh/tmp/", ".mh/backups/"])) escritos.push(".gitignore");
+  if (anadirLineas(join(raiz, ".gitignore"), IGNORADOS)) escritos.push(".gitignore");
 
   // 7. .mh.json (conserva la configuración del usuario)
   respaldar(".mh.json");
@@ -186,6 +204,8 @@ export function aplicar(raiz, plan, esc) {
     ...base, ...previo,
     version: VERSION,
     perfil: previo.perfil || plan.perfil,
+    // El interruptor del usuario (traza.mjs on|off) manda sobre la respuesta de la instalación
+    traza: typeof previo.traza === "boolean" ? previo.traza : plan.respuestas.traza === "si",
     git: {
       convencion: plan.respuestas.convencion,
       formatoRama: plan.respuestas.formatoRama,
@@ -207,6 +227,12 @@ export function aplicar(raiz, plan, esc) {
       reglas: comp.reglas.map((r) => r.id), vendor: comp.vendor.map((x) => x.id),
       vigilar: plan.vigilar || {}, archivosBuild: plan.archivosBuild || [],
     },
+    // Riesgo: lo del usuario se conserva; se añade lo que el plan necesita (p. ej. contratos entre módulos de Spring Modulith)
+    riesgo: (() => {
+      const r = { nivel0: [], nivel2: [], contenido2: [], ...(base.riesgo || {}), ...(previo.riesgo || {}) };
+      for (const k of ["nivel0", "nivel2", "contenido2"]) r[k] = [...new Set([...(r[k] || []), ...(plan.riesgo?.[k] || [])])];
+      return r;
+    })(),
     gestionados,
   };
   escribir(join(raiz, ".mh.json"), `${JSON.stringify(config, null, 2)}\n`);

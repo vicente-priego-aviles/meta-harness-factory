@@ -29,16 +29,7 @@ Una **[skill](../ayuda/glosario.md#skill)** es un archivo de instrucciones (`SKI
 | Skill | Carga | Para qué |
 |---|---|---|
 | `ddd-hexagonal` | `paths`: `dominio/`, `domain/`, `aplicacion/`, `application/`, `infraestructura/`, `*ArchTest*.java` | [DDD](../ayuda/glosario.md#ddd) táctico y arquitectura hexagonal con [jMolecules](../ayuda/glosario.md#jmolecules): agregados, objetos valor, eventos, puertos y adaptadores, y las reglas de [ArchUnit](../ayuda/glosario.md#archunit) que lo comprueban |
-
-## Módulo camunda
-| Skill | Carga | Para qué |
-|---|---|---|
-| `camunda-8` | `paths`: `*.bpmn`, `*.dmn`, `*.form`, `*Worker*.java`, `camunda/` | Camunda 8 en Spring Boot: workers [idempotentes](../ayuda/glosario.md#idempotencia), los tres tipos de error, variables como contrato, cambios en [BPMN](../ayuda/glosario.md#bpmn-dmn) con [instancias en vuelo](../ayuda/glosario.md#instancia-en-vuelo) y tests de proceso. Consulta la documentación oficial de Camunda copiada en `.mh/vendor/camunda/` |
-
-## Módulo vaadin
-| Skill | Carga | Para qué |
-|---|---|---|
-| `vaadin-flow` | `paths`: `ui/`, `vista/`, `views/`, `*View.java`, `*Vista.java`, `frontend/` | Vistas Vaadin Flow con Spring: seguridad en cada vista, vistas que solo llaman a casos de uso, formularios con `Binder` y tests sin navegador |
+| `spring-modulith` | `paths`: `package-info.java`, `internal/`, `domain/`, `application/`, `*Listener*.java`, `*Event*.java`, `Modularity*Test*.java` | Variante para proyectos con [Spring Modulith](../ayuda/glosario.md#spring-modulith) (sustituye a `ddd-hexagonal`): API pública e `internal/` de cada módulo, dependencias permitidas, eventos como contrato, listeners [idempotentes](../ayuda/glosario.md#idempotencia) y `ApplicationModules.verify()` |
 
 ## Módulo git
 | Skill | Carga | Para qué |

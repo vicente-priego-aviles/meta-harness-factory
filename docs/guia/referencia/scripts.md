@@ -41,6 +41,17 @@ node .mh/scripts/mvnq.mjs -pl servicio-clientes test -Dtest=ClienteTest
 
 Cuánto ahorra y ejemplos de salida: [la salida de Maven](../tokens/mvnq.md).
 
+## traza.mjs
+Interruptor del [modo traza](hooks.md#modo-traza).
+
+```bash
+node .mh/scripts/traza.mjs on       # lo activa (.mh.json → traza: true)
+node .mh/scripts/traza.mjs off      # lo apaga
+node .mh/scripts/traza.mjs ver 20   # las últimas 20 líneas de .mh/tmp/traza.log
+```
+
+Para una sola sesión, sin tocar `.mh.json`: `MH_TRAZA=1 claude` (o `MH_TRAZA=0` para apagarlo).
+
 ## tarea.mjs
 Interfaz única con el [gestor de tareas](../ayuda/glosario.md#gestor-de-tareas) del proyecto: GitHub Issues (con `gh`), Jira (con `acli`) o GitLab (con `glab`). Devuelve resúmenes compactos en lugar del JSON completo de cada tarea. Lo instala el módulo **tareas**.
 
@@ -54,7 +65,7 @@ Interfaz única con el [gestor de tareas](../ayuda/glosario.md#gestor-de-tareas)
 | `crear … --bloqueada-por "id1,id2"` | marca de qué tareas depende | `crear` |
 | `crear … --tipo <tipo>` | tipo de tarea en Jira (por defecto, `Task`) | `crear` |
 | `comentar <id>` con `--texto "…"` o `--archivo f.md` | añade un comentario | `comentar` |
-| `estado <id> <estado>` | cambia el estado a `enCurso`, `revision` o `hecho` (los nombres reales en tu gestor están en `tareas.estados`) | `estado` |
+| `estado <id> <estado>` | cambia el estado a `enCurso`, `revision` o `hecho` (los nombres reales en tu gestor están en `tareas.estados`). En GitHub son etiquetas: si no existen, las crea la primera vez | `estado` |
 | `cerrar <id> [--texto "…"]` | cierra la tarea, con un comentario opcional | `cerrar` |
 
 ```bash

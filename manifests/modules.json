@@ -35,7 +35,8 @@
         "editar-posterior",
         "compactar",
         "sesion-fin",
-        "parar"
+        "parar",
+        "traza"
       ]
     },
     "java": {
@@ -64,14 +65,15 @@
       ]
     },
     "ddd": {
-      "descripcion": "DDD táctico y arquitectura hexagonal con jMolecules y ArchUnit",
+      "descripcion": "DDD táctico: arquitectura hexagonal con jMolecules y ArchUnit o, con Spring Modulith, fronteras entre módulos de aplicación",
       "señales": {
         "rutas": [
           "**/dominio/**",
           "**/domain/**"
         ],
         "dependencias": [
-          "jmolecules"
+          "jmolecules",
+          "spring-modulith"
         ]
       },
       "requiere": [
@@ -85,7 +87,20 @@
       ],
       "reglas": [
         "dominio"
-      ]
+      ],
+      "variantes": {
+        "spring-modulith": {
+          "skills": [
+            "spring-modulith"
+          ],
+          "agentes": [
+            "revisor-modulos"
+          ],
+          "reglas": [
+            "modulos"
+          ]
+        }
+      }
     },
     "camunda": {
       "descripcion": "Camunda 8: workers, BPMN/DMN, tests de proceso (+ referencias oficiales de Camunda)",

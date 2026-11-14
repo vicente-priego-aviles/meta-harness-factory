@@ -1,0 +1,109 @@
+{
+ "titulo": "Módulos del catálogo",
+ "descripcion": "Versión de la guía web (sin los módulos camunda y vaadin, de momento; ADR-0017). La completa está en ../modulos.spec.json.",
+ "tags": [
+  "modulos",
+  "instalador"
+ ],
+ "maxCaracteres": 34,
+ "huecoX": 70,
+ "huecoY": 90,
+ "nodos": [
+  {
+   "id": "senal",
+   "texto": "Señales del proyecto\npom.xml · dominio/\njmolecules · spring-modulith",
+   "color": "naranja",
+   "forma": "ellipse",
+   "fila": 0,
+   "col": 0,
+   "ancho": 400,
+   "alto": 140
+  },
+  {
+   "id": "nucleo",
+   "texto": "nucleo (siempre)\nbrain · ftd · asdd · interrogar\nrevision · hooks · riesgo · mvnq",
+   "color": "amarillo",
+   "fila": 0,
+   "col": 1,
+   "ancho": 320
+  },
+  {
+   "id": "respuesta",
+   "texto": "Tu respuesta\nal instalar:\n¿qué gestor usas?",
+   "color": "naranja",
+   "forma": "ellipse",
+   "fila": 0,
+   "col": 2,
+   "ancho": 300,
+   "alto": 130
+  },
+  {
+   "id": "git",
+   "texto": "git\ngit · release",
+   "color": "azul",
+   "fila": 1,
+   "col": 0
+  },
+  {
+   "id": "java",
+   "texto": "java\njava-spring-boot · secuencia\nrevisor-java-spring\nreparador-compilacion",
+   "color": "azul",
+   "fila": 1,
+   "col": 1
+  },
+  {
+   "id": "tareas",
+   "texto": "tareas\nGitHub · Jira · GitLab\ntarea.mjs",
+   "color": "azul",
+   "fila": 1,
+   "col": 2
+  },
+  {
+   "id": "ddd",
+   "texto": "ddd\nddd-hexagonal · revisor-ddd\no, con Spring Modulith:\nspring-modulith · revisor-modulos",
+   "color": "azul",
+   "fila": 2,
+   "col": 1
+  }
+ ],
+ "aristas": [
+  {
+   "de": "senal",
+   "a": "git",
+   "estilo": "discontinua",
+   "texto": "repo git o build"
+  },
+  {
+   "de": "senal",
+   "a": "java",
+   "estilo": "discontinua",
+   "texto": "activan"
+  },
+  {
+   "de": "respuesta",
+   "a": "tareas",
+   "estilo": "discontinua",
+   "texto": "activa"
+  },
+  {
+   "de": "ddd",
+   "a": "java",
+   "texto": "requiere"
+  }
+ ],
+ "leyenda": [
+  {
+   "color": "amarillo",
+   "texto": "siempre se instala"
+  },
+  {
+   "color": "azul",
+   "texto": "módulo opcional (se suma al núcleo)"
+  },
+  {
+   "color": "naranja",
+   "forma": "ellipse",
+   "texto": "lo que mira el instalador"
+  }
+ ]
+}

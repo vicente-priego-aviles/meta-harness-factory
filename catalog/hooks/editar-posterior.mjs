@@ -2,7 +2,8 @@
 // PostToolUse (Edit|Write|MultiEdit): si se edita código sin documento FTD ni spec en curso,
 // lo recuerda UNA vez por sesión (no bloquea).
 import { relative } from "node:path";
-import { activo, contexto, enAbierto, git, leerConfig, leerEntrada, primeraVez, raizProyecto } from "./lib/comun.mjs";
+import { activo, conAviso, contexto, enAbierto, git, leerConfig, leerEntrada, primeraVez, raizProyecto } from "./lib/comun.mjs";
+import { ICONOS, anunciar } from "./lib/traza.mjs";
 import { ramaBase } from "../scripts/riesgo.mjs";
 
 const CODIGO = /\.(java|kt|groovy|ts|tsx|js|py|sql|bpmn|dmn|form|ya?ml|properties|xml)$/i;
@@ -34,6 +35,7 @@ if (process.argv[1]?.endsWith("editar-posterior.mjs")) {
     if (!esCodigo(relative(raiz, ruta).split("\\").join("/"), brain)) return;
     if (hayDocumento(raiz, brain)) return;
     if (!primeraVez(raiz, entrada.session_id, "aviso-ftd")) return;
+    conAviso(anunciar(raiz, config, ICONOS.aviso, "código sin FTD ni spec en curso: aviso al agente"));
     contexto("PostToolUse",
       "Estás cambiando código sin documento FTD ni spec en curso. Si es un cambio claro, crea el FTD (skill ftd) " +
       "con intención, alcance y checklist con prueba; si hay decisiones abiertas, carril ASDD. Este aviso no se repite en la sesión.");

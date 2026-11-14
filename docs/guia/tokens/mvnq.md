@@ -2,44 +2,48 @@
 
 Cada vez que el agente compila o lanza los tests, **lee toda la salida del comando**, y todo lo que lee ocupa contexto y cuesta [tokens](../ayuda/glosario.md#token). Maven es muy hablador: descargas, plugins, una línea por cada fase de cada módulo, trazas de cien líneas… Casi nada de eso le sirve al agente para decidir qué hacer. `mvnq` es el envoltorio de **[meta-harness-factory](../ayuda/glosario.md#meta-harness)** que ejecuta Maven y le enseña solo lo que importa. La *q* viene de *quiet*, «silencioso».
 
-## Cuánto ahorra (medido en PetClinic)
-El mismo `verify` de Spring PetClinic (84 tests), lanzado con Maven a pelo y con `mvnq`:
+## Cuánto ahorra (medido en PetClinic Modulith)
+El mismo `verify` de [Spring PetClinic Modulith](../ayuda/glosario.md#spring-modulith) (63 tests), lanzado con Maven a pelo y con `mvnq`:
 
 | Caso | Maven a pelo | Con `mvnq` | Ahorro |
 |---|---|---|---|
-| Todo en verde | 823 líneas · 97.342 caracteres (≈ 24.000 tokens) | 4 líneas · ≈ 210 caracteres (≈ 50 tokens) | **99,8 %** |
-| Un test que falla | 837 líneas · 98.105 caracteres (≈ 24.500 tokens) | 14 líneas · ≈ 1.300 caracteres (≈ 330 tokens) | **98,7 %** |
+| Todo en verde | 892 líneas · 104.017 caracteres (≈ 26.000 tokens) | 5 líneas · 196 caracteres (≈ 50 tokens) | **99,8 %** |
+| Un test que falla | 900 líneas · 103.685 caracteres (≈ 25.900 tokens) | 16 líneas · 986 caracteres (≈ 250 tokens) | **99,0 %** |
 
 <small>Tokens estimados con la regla habitual de unos 4 caracteres por token; sirve para comparar, no es una cifra exacta.</small>
 
-En una sesión normal el agente compila varias veces (antes del cambio, después, tras corregir un fallo…). Sin el filtro, cada ejecución metería unos 24.000 tokens en el contexto, que además **se arrastran** en cada mensaje posterior hasta que la sesión se compacta.
+En una sesión normal el agente compila varias veces (antes del cambio, después, tras corregir un fallo…). Sin el filtro, cada ejecución metería unos 26.000 tokens en el contexto, que además **se arrastran** en cada mensaje posterior hasta que la sesión se compacta.
 
 ## Qué ve el agente
 Cuando todo va bien:
 
 ```text
-[INFO] Tests run: 84, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 63, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
-[INFO] Total time:  42.021 s
+[INFO] Total time:  01:17 min
 
-[mvnq] ./mvnw verify → código 0. Log completo (824 líneas): .mh/tmp/mvn-ultimo.log
+[mvnq] ./mvnw verify → código 0. Log completo (888 líneas): .mh/tmp/mvn-ultimo.log
 ```
 
 Cuando falla un test, justo lo necesario para arreglarlo: qué test, qué esperaba, qué obtuvo y dónde.
 
 ```text
-[ERROR] org.springframework.samples.petclinic.owner.PetValidatorTests.supportsPetClass -- <<< FAILURE!
-org.opentest4j.AssertionFailedError: expected: <false> but was: <true>
-	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:158)
-	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:139)
-	at org.junit.jupiter.api.AssertFalse.failNotFalse(AssertFalse.java:69)
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.027 s <<< FAILURE! -- in org.springframework.samples.petclinic.vet.internal.VetTests
+[ERROR] org.springframework.samples.petclinic.vet.internal.VetTests.testSerialization -- Time elapsed: 0.022 s <<< FAILURE!
+expected: "Roto"
+ but was: "Zaphod"
+	at org.springframework.samples.petclinic.vet.internal.VetTests.testSerialization(VetTests.java:36)
 [ERROR] Failures:
-[ERROR]   PetValidatorTests.supportsPetClass:68 expected: <false> but was: <true>
-[ERROR] Tests run: 84, Failures: 1, Errors: 0, Skipped: 0
+[ERROR]   VetTests.testSerialization:36
+expected: "Roto"
+ but was: "Zaphod"
+[ERROR] Tests run: 63, Failures: 1, Errors: 0, Skipped: 0
 [INFO] BUILD FAILURE
-[ERROR] Failed to execute goal …maven-surefire-plugin…: There are test failures.
+[INFO] Total time:  01:18 min
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test (default-test) on project spring-petclinic: There are test failures.
+[ERROR] See …/target/surefire-reports for the individual test results.
 
-[mvnq] ./mvnw verify → código 1. Log completo (837 líneas): .mh/tmp/mvn-ultimo.log
+[mvnq] ./mvnw verify → código 1. Log completo (900 líneas): .mh/tmp/mvn-ultimo.log
 ```
 
 ## Cómo funciona

@@ -66,7 +66,7 @@
   },
   {
    "id": "codigo",
-   "texto": "Código Java\nMaven · BPMN · Vaadin",
+   "texto": "Código Java\nMaven · Spring Boot",
    "color": "gris",
    "fila": 2,
    "col": 3

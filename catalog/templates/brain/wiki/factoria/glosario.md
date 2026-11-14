@@ -21,16 +21,16 @@ Forma de trabajar en la que una petición entra, pasa por pasos definidos y sale
 Camino que sigue una petición según lo clara que esté. Hay tres: [Responder](#Responder), [FTD](#FTD) y [ASDD](#ASDD). El agente elige el carril, te lo dice en una línea y tú puedes corregirlo.
 
 ### Responder
-Carril para preguntas. El agente busca y contesta **sin escribir nada** en el repo. *Ejemplo*: «¿qué worker procesa el job `reservar-vuelo`?».
+Carril para preguntas. El agente busca y contesta **sin escribir nada** en el repo. *Ejemplo*: «¿qué clase asigna un veterinario a una visita nueva?».
 
 ### FTD
-**Fast Track Development** — *desarrollo por vía rápida*. Carril para cambios **claros, sin decisiones abiertas**. Se documenta en un único archivo (`brain/factory/ftd/<nombre>.md`) con la intención, el alcance y una lista de comprobación donde cada punto tiene su prueba. Término tomado de un harness de código abierto. *Ejemplo*: corregir una validación de un DTO o añadir un campo a una vista Vaadin. Si el cambio resulta de [riesgo 2](#Riesgo) o choca con una decisión anterior, **sube a ASDD**.
+**Fast Track Development** — *desarrollo por vía rápida*. Carril para cambios **claros, sin decisiones abiertas**. Se documenta en un único archivo (`brain/factory/ftd/<nombre>.md`) con la intención, el alcance y una lista de comprobación donde cada punto tiene su prueba. Término tomado de un harness de código abierto. *Ejemplo*: corregir una validación de un DTO o añadir un campo a un formulario. Si el cambio resulta de [riesgo 2](#Riesgo) o choca con una decisión anterior, **sube a ASDD**.
 
 ### SDD
 **Spec Driven Development** — *desarrollo guiado por especificación*. Primero se escribe qué hay que construir (la spec), luego el plan, luego el código. Es el antecesor de ASDD.
 
 ### ASDD
-**Agent Spec Driven Development** — *desarrollo guiado por especificación, pensado para agentes*. Variante de SDD propuesta por un divulgador del desarrollo con agentes tras comprobar que un agente con specs detalladas y 4.500 tests en verde construyó algo distinto de lo pedido (rellenó huecos con supuestos). Carril para cambios **con decisiones abiertas o encadenadas**. Su spec responde 4 preguntas: qué podrá hacer el usuario, qué resultado observable obtiene, qué debe respetar y cómo se demuestra. La revisión ocurre **dentro** de cada tarea, no solo al final. *Ejemplo*: un nuevo subproceso de compensación en Camunda o un nuevo agregado de dominio.
+**Agent Spec Driven Development** — *desarrollo guiado por especificación, pensado para agentes*. Variante de SDD propuesta por un divulgador del desarrollo con agentes tras comprobar que un agente con specs detalladas y 4.500 tests en verde construyó algo distinto de lo pedido (rellenó huecos con supuestos). Carril para cambios **con decisiones abiertas o encadenadas**. Su spec responde 4 preguntas: qué podrá hacer el usuario, qué resultado observable obtiene, qué debe respetar y cómo se demuestra. La revisión ocurre **dentro** de cada tarea, no solo al final. *Ejemplo*: que el dueño elija veterinario al pedir una visita, o un nuevo agregado de dominio.
 
 ### Spec
 *Especificación*. Documento que dice **qué** hay que construir y cómo se sabrá que está bien hecho, antes de escribir código. En ASDD vive en `brain/factory/specs/`. Tú la apruebas antes de seguir.
@@ -72,7 +72,7 @@ Subagente que comprueba cada problema que reporta un revisor partiendo de que **
 *Prueba de humo*. Comprobación rápida de que la aplicación arranca y responde (p. ej. `/actuator/health`) antes de tocar nada.
 
 ### e2e
-**End to end** — *de punta a punta*. Prueba que recorre el sistema como lo haría un usuario (de la pantalla Vaadin o la API hasta la base de datos y el proceso Camunda), no solo una pieza aislada.
+**End to end** — *de punta a punta*. Prueba que recorre el sistema como lo haría un usuario (de la pantalla o la API hasta la base de datos), no solo una pieza aislada.
 
 ### Worklog
 *Registro de sesión*. Resumen de lo hecho en una sesión (qué se cambió, qué queda, decisiones). Lo escribe un hook al compactar o cerrar la sesión en `brain/raw/sesiones/`.
@@ -136,7 +136,7 @@ Instancia de Claude con **su propio contexto**, herramientas y modelo, a la que 
 *Gancho*. Script que Claude Code ejecuta automáticamente en un momento concreto (al empezar la sesión, antes de usar una herramienta, al terminar…). Puede bloquear acciones o añadir contexto. Es la forma de **imponer** reglas, no solo pedirlas.
 
 ### Regla con paths
-Archivo en `.claude/rules/` con un campo `paths` (p. ej. `**/*.bpmn`). Solo se carga cuando Claude trabaja con archivos que coinciden, así no ocupa contexto el resto del tiempo.
+Archivo en `.claude/rules/` con un campo `paths` (p. ej. `**/*.sql`). Solo se carga cuando Claude trabaja con archivos que coinciden, así no ocupa contexto el resto del tiempo.
 
 ### Siempre activo
 Todo lo que se carga en **cada** petición (CLAUDE.md, reglas sin paths, descripciones de skills, lo que inyectan los hooks). Se paga continuamente, por eso tiene un presupuesto (ADR-0007).
@@ -152,6 +152,9 @@ Unidad en la que el modelo lee y escribe texto (aprox. ¾ de palabra). Lo que se
 
 ### LSP
 **Language Server Protocol** — el «motor» que usan los IDE para ir a definiciones o ver errores. Con el plugin `jdtls-lsp`, Claude navega el código Java por símbolos en vez de leer archivos enteros.
+
+### Modo traza
+Modo que muestra en la conversación, con un icono por línea, qué carril, skills, subagentes, reglas y hooks del harness actúan en cada tarea (🛣️ 🧩 🤖 📏 ⚖️ 🛡️ 🔧). Lo escriben los hooks, no el modelo, así que no cuesta tokens; cada línea queda en `.mh/tmp/traza.log`. Se activa al instalar o con `node .mh/scripts/traza.mjs on`.
 
 ### Orientación
 Bloque corto (menos de 1 KB) que el hook de inicio inyecta en cada sesión: el decisor de carriles, la regla de consultar el brain y la regla de estilo. Es lo único del proceso que está siempre cargado.
@@ -175,7 +178,7 @@ Documentación mantenida por el fabricante de una tecnología (p. ej. las skills
 Primera instalación de meta-harness-factory en un proyecto (`mh instalar`): entrevista de cinco preguntas, escaneo del proyecto, plan y aplicación tras aceptarlo.
 
 ### Módulo
-Paquete del catálogo que se instala entero o no se instala: `nucleo` (siempre), `java`, `ddd`, `camunda`, `vaadin`. Cada uno trae sus skills, revisores y reglas, y se propone según las señales del proyecto.
+Paquete del catálogo que se instala entero o no se instala: `nucleo` (siempre), `java`, `ddd`, `camunda`, `vaadin`, `git` y `tareas`. Cada uno trae sus skills, revisores y reglas, y se propone según las señales del proyecto.
 
 ### Primero el plan
 Forma de instalar de meta-harness-factory: primero **propone** qué instalar (cada pieza como *seleccionada*, *aplazada* o *excluida*, con su motivo) y no escribe nada hasta que aceptas ese plan concreto.
@@ -207,6 +210,15 @@ Herramienta que convierte una página web en Markdown limpio, sin menús ni anun
 
 ### DDD
 **Domain Driven Design** — *diseño guiado por el dominio*. Organizar el código alrededor del negocio: lenguaje ubicuo, contextos acotados, agregados. En arquitectura hexagonal, el dominio no depende de Spring ni de la infraestructura.
+
+### Spring Modulith
+Proyecto de Spring para organizar una aplicación Spring Boot en **módulos de aplicación** con fronteras claras, dentro de un solo despliegue (un *monolito modular*). Comprueba las fronteras con un test (`ApplicationModules.verify()`) y comunica los módulos con **eventos de aplicación**. El proyecto de ejemplo de la guía, Spring PetClinic Modulith, lo usa.
+
+### Módulo de aplicación
+En [Spring Modulith](#Spring%20Modulith), cada paquete directo bajo el paquete principal (p. ej. `owner`, `vet`). Lo que hay en sus subpaquetes internos no se puede usar desde otro módulo; los demás solo ven su API pública. No confundir con un [módulo](#Módulo) del catálogo.
+
+### Evento de aplicación
+Mensaje que un módulo publica cuando pasa algo de negocio (p. ej. `VisitBooked`, «visita reservada») y que otros módulos escuchan sin que el primero los conozca. En Spring Modulith se guardan en una tabla hasta procesarse, así que pueden llegar más de una vez: quien los escucha debe ser [idempotente](#Idempotencia).
 
 ### Lenguaje ubicuo
 Vocabulario del negocio que comparten código, documentación y personas. En el brain vive en `wiki/producto/glosario`.
@@ -263,7 +275,7 @@ Motor de procesos de Camunda 8: ejecuta los BPMN desplegados y reparte el trabaj
 Código que Zeebe invoca para hacer una tarea automática del BPMN (un *job*): recibe variables, llama a un caso de uso y devuelve variables, o señala un error. En Spring se marca con `@JobWorker(type = "...")`.
 
 ### Idempotencia
-Propiedad de una operación que puede repetirse sin cambiar el resultado. Zeebe entrega cada job **al menos una vez**, así que un worker debe poder ejecutarse dos veces con el mismo job sin duplicar efectos ni fallar.
+Propiedad de una operación que puede repetirse sin cambiar el resultado. Importa cuando un mensaje o un evento puede llegar **más de una vez** (reintentos, eventos de Spring Modulith, tareas de un motor de procesos): quien lo procesa debe poder hacerlo dos veces sin duplicar efectos ni fallar.
 
 ### Instancia en vuelo
 Ejecución de un proceso BPMN que ya empezó y aún no terminó. Sigue usando la versión del proceso con la que arrancó; por eso cambiar un BPMN desplegado requiere un plan para ellas.

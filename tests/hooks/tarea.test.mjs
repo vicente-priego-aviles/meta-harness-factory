@@ -140,6 +140,20 @@ describe("tarea.mjs", () => {
     assert.match(registro("glab"), /-t Épica: T001 --description-file - --yes\nc\n\nParte de #3\nBloqueada por: #4/);
   });
 
+  test("GitHub: si faltan las etiquetas de estado, las crea y repite", () => {
+    proyecto({ gestor: "github" });
+    const gh = join(bin, "gh"), original = readFileSync(gh, "utf8");
+    // gh simulado: «issue edit» falla hasta que se ha creado alguna etiqueta
+    writeFileSync(gh, `#!/bin/sh\necho "$@" >> "${dir}/gh-etiquetas.log"\nif [ "$1" = label ]; then touch "${dir}/creada"; exit 0; fi\nif [ ! -f "${dir}/creada" ]; then echo "'En revisión' not found" >&2; exit 1; fi\necho ok\n`);
+    try {
+      const r = correr("estado", "57", "enCurso");
+      assert.equal(r.codigo, 0, r.salida);
+      const log = readFileSync(join(dir, "gh-etiquetas.log"), "utf8");
+      for (const e of ["En curso", "En revisión", "Hecho"]) assert.match(log, new RegExp(`label create ${e}`));
+      assert.equal(log.match(/issue edit/g).length, 2);
+    } finally { writeFileSync(gh, original); }
+  });
+
   test("adfATexto", () => {
     assert.equal(t.adfATexto({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "a" }, { type: "text", text: "b" }] }] }), "ab\n");
   });

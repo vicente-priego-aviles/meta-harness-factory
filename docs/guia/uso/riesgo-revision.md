@@ -11,7 +11,6 @@ Cuánto control necesita un cambio no lo decide el agente «a ojo»: lo calcula 
 
 Son de **[riesgo](../ayuda/glosario.md#riesgo) 2**:
 
-- procesos y decisiones: `*.bpmn`, `*.dmn`, formularios de Camunda (`*.form`);
 - base de datos: migraciones (`db/migration/**`, `db/changelog/**`) y cualquier `*.sql`;
 - seguridad: `*SecurityConfig*`, `security/**`;
 - configuración de producción: `application-prod.*`;
@@ -22,19 +21,23 @@ Son de **[riesgo](../ayuda/glosario.md#riesgo) 2**:
 
 Un archivo de código normal sube a 2 si **lo que cambia** contiene algo sensible: `PasswordEncoder`, `BCrypt`, `Cipher`, `@PreAuthorize`, `SecurityFilterChain`, `ALTER TABLE`, `CREATE TABLE`…
 
-## El script, en PetClinic
+## El script, en PetClinic Modulith
 El agente lo ejecuta **antes de empezar**, con los archivos que piensa tocar, y otra vez **al terminar**, con lo que de verdad cambió:
 
 ```text
-$ node .mh/scripts/riesgo.mjs src/main/java/…/owner/PetValidator.java README.md
-Riesgo 1 (2 archivos)
-  1  src/main/java/org/springframework/samples/petclinic/owner/PetValidator.java  — código
+$ node .mh/scripts/riesgo.mjs src/main/resources/templates/owners/ownerDetails.html src/main/java/…/owner/domain/Pet.java README.md
+Riesgo 1 (3 archivos)
+  1  src/main/resources/templates/owners/ownerDetails.html  — código
+  1  src/main/java/org/springframework/samples/petclinic/owner/domain/Pet.java  — código
 
-$ node .mh/scripts/riesgo.mjs pom.xml src/main/resources/db/h2/schema.sql src/main/java/…/owner/Owner.java
-Riesgo 2 (3 archivos)
+$ node .mh/scripts/riesgo.mjs pom.xml src/main/java/…/vet/package-info.java src/main/java/…/owner/VisitBooked.java src/main/java/…/owner/domain/Pet.java
+Riesgo 2 (4 archivos)
   2  pom.xml  — ruta sensible
-  2  src/main/resources/db/h2/schema.sql  — ruta sensible
+  2  src/main/java/org/springframework/samples/petclinic/vet/package-info.java  — ruta sensible
+  2  src/main/java/org/springframework/samples/petclinic/owner/VisitBooked.java  — ruta sensible
 ```
+
+En un proyecto con [Spring Modulith](../ayuda/glosario.md#spring-modulith), el instalador añade al riesgo 2 los `package-info.java` y la API pública de cada módulo (como el evento `VisitBooked`): cambiarlos afecta a otros módulos.
 
 El nivel del cambio es el **más alto** de sus archivos, y el script solo enseña los que lo determinan. Sin argumentos, mide todo lo que ha cambiado en la rama frente a la rama base.
 
@@ -82,7 +85,7 @@ Así, por ejemplo, todo lo que toque el cálculo de pagos pasa por ASDD. Los arc
 | Riesgo | Revisores |
 |---|---|
 | 0 | ninguno |
-| 1 | **uno**, el del terreno del cambio: Camunda si toca workers o [BPMN](../ayuda/glosario.md#bpmn-dmn), DDD si toca dominio o adaptadores, Java/Spring para el resto (o el de corrección general si no hay de stack) |
+| 1 | **uno**, el del terreno del cambio: DDD si toca dominio o adaptadores, Java/Spring para el resto (o el de corrección general si no hay de stack) |
 | 2 | corrección + tests + seguridad + todos los de stack que toque el cambio |
 
 El panel crece con el riesgo porque cada revisor es una llamada completa a un modelo: un cambio pequeño no necesita cinco opiniones.
@@ -91,14 +94,14 @@ El panel crece con el riesgo porque cada revisor es una llamada completa a un mo
 Los hallazgos que piden un cambio pasan por el subagente `verificador-hallazgos`, que parte de que **cada hallazgo es falso** y lo comprueba contra el código: CONFIRMADO, REFUTADO o SIN PROBAR. Solo lo confirmado vuelve al desarrollador; los de gravedad baja que solo informan pueden cerrarse sin verificar, como en el ejemplo de abajo. Así no se «arreglan» cosas que no estaban rotas, que es uno de los errores más caros de un agente.
 
 ### El registro
-Cada revisión queda en `brain/factory/revisiones/`. Esta es la de PetClinic, de riesgo 1 con un solo revisor:
+Cada revisión queda en `brain/factory/revisiones/`. Esta es la del [primer cambio del tutorial](../tutorial/primer-ftd.md), de riesgo 1 con un solo revisor:
 
 | # | Revisor | Hallazgo | Gravedad | Veredicto | Cierre |
 |---|---|---|---|---|---|
-| H1 | java-spring | `PetValidator.java:61` cambia el orden de errores en el BindingResult | baja | no verificado (informativo) | intencionado: la vista muestra errores por campo |
-| H2 | java-spring | Faltaban tests de «hoy es válido» y «fecha nula da un solo error» | baja | no verificado (informativo) | arreglado: añadidos en `PetValidatorTests` |
+| H1 | correccion | `Pet.java:99` y `ownerDetails.html:62,64`: una visita sin fecha rompe la ficha del dueño (error 500) | alta | confirmado con un test que fallaba | arreglado: las visitas sin fecha van al final |
+| H2 | correccion | El [FTD](../ayuda/glosario.md#ftd) dice «solo inglés», pero el cambio toca los 8 idiomas | baja | no verificado (informativo) | arreglado: alcance corregido en el FTD |
 
 Cada hallazgo se cierra con un motivo: `arreglado`, `falso`, `intencionado`, `irrelevante` o `aparcado`. Como mucho hay tres rondas; si después sigue habiendo desacuerdo, pasa a la [cola de decisiones](../ayuda/glosario.md#cola-de-decisiones) y decides tú.
 
 ## Qué cuenta como fallo
-`brain/factory/revision.md` dice, para tu proyecto, qué bloquea una revisión y qué no. Por ejemplo: romper un contrato de proceso (una variable o un código de error de un BPMN) bloquea, y una preferencia de estilo no. El instalador crea un borrador y lo completas con el agente la primera vez, junto con la [constitución](../ayuda/glosario.md#constitucion).
+`brain/factory/revision.md` dice, para tu proyecto, qué bloquea una revisión y qué no. Por ejemplo: romper un contrato entre módulos (un evento que otro módulo escucha) bloquea, y una preferencia de estilo no. El instalador crea un borrador y lo completas con el agente la primera vez, junto con la [constitución](../ayuda/glosario.md#constitucion).

@@ -7,7 +7,8 @@
 //   rama-protegida    — commit directo en una rama de git.ramasProtegidas → bloquea
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { activo, decisionPreTool, enAbierto, frontmatter, git, leerConfig, leerEntrada, raizProyecto } from "./lib/comun.mjs";
+import { activo, conAviso, decisionPreTool, enAbierto, frontmatter, git, leerConfig, leerEntrada, raizProyecto } from "./lib/comun.mjs";
+import { ICONOS, anunciar } from "./lib/traza.mjs";
 import { archivosCambiados, evaluar, ramaBase, textoCambiado } from "../scripts/riesgo.mjs";
 
 export const PELIGROS = [
@@ -114,22 +115,23 @@ if (process.argv[1]?.endsWith("bash-previo.mjs")) {
     const config = leerConfig(raiz);
     if (activo(config, "peligro", "minimal")) {
       const motivo = comprobarPeligro(cmd);
-      if (motivo) decisionPreTool("ask", motivo);
+      if (motivo) { conAviso(anunciar(raiz, config, ICONOS.bloqueo, `pide confirmación: ${motivo}`)); decisionPreTool("ask", motivo); }
     }
     if (activo(config, "puerta-riesgo")) {
       const motivo = comprobarRiesgo(cmd, raiz, config);
-      if (motivo) decisionPreTool("deny", motivo);
+      if (motivo) { conAviso(anunciar(raiz, config, ICONOS.bloqueo, `puerta de riesgo: ${motivo}`)); decisionPreTool("deny", motivo); }
     }
     if (activo(config, "rama-protegida")) {
       const motivo = comprobarRamaProtegida(cmd, raiz, config.git?.ramasProtegidas);
-      if (motivo) decisionPreTool("deny", motivo);
+      if (motivo) { conAviso(anunciar(raiz, config, ICONOS.bloqueo, `rama protegida: ${motivo}`)); decisionPreTool("deny", motivo); }
     }
     if (activo(config, "convencion-commit")) {
       const motivo = comprobarConvencion(cmd, config.git?.convencion);
-      if (motivo) decisionPreTool("deny", motivo);
+      if (motivo) { conAviso(anunciar(raiz, config, ICONOS.bloqueo, `convención de commit: ${motivo}`)); decisionPreTool("deny", motivo); }
     }
     if (activo(config, "maven")) {
       const alternativa = comprobarMaven(cmd);
+      if (alternativa) conAviso(anunciar(raiz, config, ICONOS.maven, `Maven → ${alternativa}`));
       if (alternativa) decisionPreTool("deny", `Usa la salida filtrada (ahorra tokens; el log completo queda en .mh/tmp/): ${alternativa}`);
     }
   });

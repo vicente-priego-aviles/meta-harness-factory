@@ -18,7 +18,7 @@ Por eso, en las mediciones de **[meta-harness-factory](../ayuda/glosario.md#meta
 ## Lo que dicen las mediciones
 - En tareas **pequeñas**, meta-harness-factory cuesta algo **más** (+16 % en un [FTD](../ayuda/glosario.md#ftd), +42 % en una pregunta): el agente lee más y escribe el documento y la evidencia. A cambio, el trabajo queda más completo y comprobado.
 - En tareas **grandes** es donde ahorra: en una spec [ASDD](../ayuda/glosario.md#asdd), mandar a un modelo pequeño a hacer el inventario antes de que el grande escriba bajó el coste un **59 %**.
-- Filtrar la salida de Maven quita unos 24.000 tokens **por compilación**.
+- Filtrar la salida de Maven quita unos 26.000 tokens **por compilación**.
 
 Todas las cifras, con su método, en [resultados medidos](resultados.md).
 

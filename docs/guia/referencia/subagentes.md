@@ -22,9 +22,9 @@ El agente principal los llama de dos maneras: porque una [skill](../ayuda/glosar
 | `revisor-java-spring` | java | Sonnet | solo lectura | Transacciones, inyección, errores, JPA, migraciones y tests |
 | `reparador-compilacion` | java | Sonnet | leer, buscar, editar y comandos | Arregla un error de compilación o de dependencias con el cambio mínimo, en tres intentos como mucho, sin tocar tests ni reglas de calidad |
 | `revisor-ddd` | ddd | Sonnet | solo lectura | Dominio sin dependencias técnicas, agregados, capas y [lenguaje ubicuo](../ayuda/glosario.md#lenguaje-ubicuo) |
-| `revisor-camunda` | camunda | Sonnet | solo lectura | Workers [idempotentes](../ayuda/glosario.md#idempotencia), errores, variables y compatibilidad con las [instancias en vuelo](../ayuda/glosario.md#instancia-en-vuelo) |
+| `revisor-modulos` | ddd (con [Spring Modulith](../ayuda/glosario.md#spring-modulith), en lugar de `revisor-ddd`) | Sonnet | solo lectura | Fronteras entre módulos: API pública, dependencias permitidas, eventos como contrato y listeners [idempotentes](../ayuda/glosario.md#idempotencia) |
 
-Los revisores de stack **precargan la skill de su terreno** (`java-spring-boot`, `ddd-hexagonal` o `camunda-8`), igual que `reparador-compilacion`: revisan y corrigen con las mismas reglas con las que se escribió el código.
+Los revisores de stack **precargan la skill de su terreno** (`java-spring-boot`, `ddd-hexagonal` o `spring-modulith`), igual que `reparador-compilacion`: revisan y corrigen con las mismas reglas con las que se escribió el código.
 
 ## Qué revisores actúan
 Los elige la skill `revision` según el [riesgo](../ayuda/glosario.md#riesgo) real del cambio:
@@ -32,7 +32,7 @@ Los elige la skill `revision` según el [riesgo](../ayuda/glosario.md#riesgo) re
 | Riesgo | Panel |
 |---|---|
 | 0 | ninguno |
-| 1 | uno: el del terreno del cambio (Camunda, después [DDD](../ayuda/glosario.md#ddd), después Java/Spring); si no hay de stack, `revisor-correccion` |
+| 1 | uno: el del terreno del cambio ([DDD](../ayuda/glosario.md#ddd) primero, después Java/Spring); si no hay de stack, `revisor-correccion` |
 | 2 | `revisor-correccion`, `revisor-tests`, `revisor-seguridad` y todos los de stack que toque el cambio |
 
 Los hallazgos que piden un cambio pasan siempre por `verificador-hallazgos` antes de volver al `desarrollador`. Detalle en [riesgo y revisión](../uso/riesgo-revision.md#la-revision-con-contexto-limpio).

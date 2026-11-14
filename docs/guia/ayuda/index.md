@@ -7,7 +7,7 @@
 | [Glosario](glosario.md) | todas las siglas y términos de la guía, de [ADR](../ayuda/glosario.md#adr) a *worktree* |
 
 ## Preguntas rápidas
-**¿Puedo usarlo en un proyecto que no es Java?** Sí. El núcleo (brain, [carriles](../ayuda/glosario.md#carril) [FTD](../ayuda/glosario.md#ftd) y [ASDD](../ayuda/glosario.md#asdd), revisión, hooks, git y tareas) no depende del lenguaje. Lo que no tendrás son los módulos de stack (Spring Boot, [DDD](../ayuda/glosario.md#ddd), Camunda, Vaadin) ni `mvnq`, y la tabla de [riesgo](glosario.md#riesgo) conviene ajustarla a tus archivos sensibles.
+**¿Puedo usarlo en un proyecto que no es Java?** Sí. El núcleo (brain, [carriles](../ayuda/glosario.md#carril) [FTD](../ayuda/glosario.md#ftd) y [ASDD](../ayuda/glosario.md#asdd), revisión, hooks, git y tareas) no depende del lenguaje. Lo que no tendrás son los módulos de stack (Spring Boot, [DDD](../ayuda/glosario.md#ddd)…) ni `mvnq`, y la tabla de [riesgo](glosario.md#riesgo) conviene ajustarla a tus archivos sensibles.
 
 **¿Funciona con otros asistentes además de Claude Code?** No. Usa piezas propias de Claude Code (hooks, [subagentes](../ayuda/glosario.md#subagente), [skills](../ayuda/glosario.md#skill) con `paths`) y está medido con él.
 

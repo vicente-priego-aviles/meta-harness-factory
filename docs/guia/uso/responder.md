@@ -6,20 +6,13 @@ Es el [carril](../ayuda/glosario.md#carril) de las **preguntas**: dónde está a
 Pregunta con naturalidad. El agente anuncia el carril en una línea y responde:
 
 ```text
-Tú:      ¿Qué worker procesa el job activar-cliente?
+Tú:      ¿Cómo llega una visita nueva a tener veterinario asignado?
 Agente:  Carril: Responder.
-         ActivarClienteWorker, en infraestructura/adaptador/entrada/camunda/. Ningún BPMN
-         desplegado usa ese job type, así que hoy no se ejecuta. Dos detalles: …
+         …
 ```
-<small>Respuesta resumida de la prueba en el proyecto de reservas de viaje.</small>
 
 ## Qué aporta meta-harness-factory en una pregunta
-En el proyecto de reservas de viaje se hizo la misma pregunta con y sin **[meta-harness-factory](../ayuda/glosario.md#meta-harness)**. Los dos encontraron el worker y vieron que ningún [BPMN](../ayuda/glosario.md#bpmn-dmn) lo usa. Con **meta-harness-factory**, el agente además:
-
-- vio que leer `clienteId` puede lanzar un `NullPointerException` **fuera** del `try`, y que el job fallaría sin un error claro;
-- citó la regla del proyecto que incumple el `catch (Exception e)` del worker (la regla de Camunda que se carga al leer código de workers).
-
-Lo encontró porque **meta-harness-factory** le da contexto del stack solo cuando lo necesita: la regla de Camunda se carga al tocar un worker, no en cada sesión.
+Las dos versiones, con y sin [harness](../ayuda/glosario.md#harness), suelen encontrar lo que se pregunta. La diferencia está en lo que el agente **ve alrededor**. Con **[meta-harness-factory](../ayuda/glosario.md#meta-harness)** carga solo cuando lo necesita el contexto del stack (las reglas de Java, de dominio o de migraciones se cargan al leer archivos de su terreno) y consulta el [brain](../ayuda/glosario.md#brain) del proyecto. Por eso la respuesta tiende a señalar también lo que incumple las reglas del proyecto o un fallo cercano, aunque no se haya preguntado por ello.
 
 ## Cuánto cuesta
 | | Sin meta-harness-factory | Con meta-harness-factory |
@@ -27,10 +20,12 @@ Lo encontró porque **meta-harness-factory** le da contexto del stack solo cuand
 | Coste | 0,092 USD | 0,131 USD (+42 %) |
 | Turnos | 4 | 7 |
 
-Una pregunta cuesta algo más con **meta-harness-factory**, porque el agente lee más (el caso de uso, la regla, el [brain](../ayuda/glosario.md#brain)) y cada turno vuelve a leer todo el contexto. A cambio, la respuesta es más completa. La diferencia en céntimos es pequeña; en la sección de [tokens](../tokens/index.md) está el desglose.
+<small>Medido en otro proyecto Spring Boot con Sonnet. Las medidas en PetClinic Modulith están en [Evaluación](../evaluacion/index.md).</small>
+
+Una pregunta cuesta algo más con **meta-harness-factory**, porque el agente lee más (las reglas, el brain) y cada turno vuelve a leer todo el contexto. A cambio, la respuesta es más completa. La diferencia en céntimos es pequeña; en la sección de [tokens](../tokens/index.md) está el desglose.
 
 > [!tip] Preguntas más baratas
-> - **Sé concreto**: «¿qué hace `ActivarClienteWorker` si el cliente no existe?» cuesta menos que «explícame los workers».
+> - **Sé concreto**: «¿qué hace `VetRoster` si no hay ningún veterinario?» cuesta menos que «explícame los módulos».
 > - **Pregunta antes de pedir un cambio**: una respuesta cuesta céntimos; un cambio mal planteado, mucho más.
 > - Para exploraciones grandes, el agente recurre al [subagente](../ayuda/glosario.md#subagente) `explorador`, que usa un modelo de lenguaje ([LLM](../ayuda/glosario.md#llm)) pequeño y barato (Haiku) y devuelve un resumen en vez de llenar la conversación de archivos.
 

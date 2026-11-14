@@ -29,16 +29,19 @@ Cada pregunta de la entrevista tiene su opción. Las que no pases, el instalador
 | Opción | Valores |
 |---|---|
 | `--nivel` | `tecnico` · `sencillo` |
-| `--tipo` | `microservicios` · `orquestador-procesos` · `ui-vaadin` · `monolito-modular` · `libreria` · `otro` |
+| `--tipo` | `microservicios` · `monolito-modular` · `libreria` · `otro`… |
 | `--objetivo` | una frase, entre comillas |
 | `--alcance` | `pequeno` · `creciente` · `complejo` |
 | `--integracion` | `ramas` · `main` |
 | `--convencion` | `conventional` · `conventional-gitmoji` |
 | `--formatoRama` | `{issue}-{tipo}-{slug}` · `{tipo}/{issue}-{slug}` · `{tipo}/{slug}` |
+| `--idiomaCodigo` | `en` · `es`: idioma del código, los commits, las issues y los [PR](../ayuda/glosario.md#pr) |
+| `--idiomaBrain` | `es` · `en`: idioma de las notas del brain |
+| `--traza` | `si` · `no`: [modo traza](hooks.md#modo-traza) |
 | `--gestor` | `ninguno` · `github` · `jira` · `gitlab` |
 | `--proyecto` | clave del proyecto en Jira |
 | `--acceso` | `cli` · `mcp` |
-| `--modulos` | lista separada por comas (`java,ddd,camunda`): impone los módulos en lugar de la propuesta |
+| `--modulos` | lista separada por comas (`java,ddd,git`): impone los módulos en lugar de la propuesta |
 | `--json` | salida en JSON (la usa el agente) |
 | `--aceptar-plan <id>` | aplica el plan con ese id |
 
@@ -53,7 +56,7 @@ El **id del plan** es una huella de lo que se va a hacer. Si entre ver el plan y
 | `CLAUDE.md` | si no existe, uno nuevo; si existe, añade un bloque entre `<!-- mh:inicio -->` y `<!-- mh:fin -->` y no toca el resto |
 | `init.sh` | solo si no existe |
 | `brain/` | solo los archivos que falten |
-| `.gitignore` | añade `.mh/tmp/` y `.mh/backups/` |
+| `.gitignore` | añade `.mh/tmp/`, `.mh/backups/` y `brain/raw/sesiones/` (los registros de sesión se escriben después del último commit y no se versionan) |
 | `.mh.json` | ver [configuración](configuracion.md); conserva tus ajustes |
 
 Antes de modificar un archivo, guarda una copia en `.mh/backups/`. Al terminar, ejecuta `comprobar`.

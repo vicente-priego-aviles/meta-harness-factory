@@ -11,9 +11,9 @@ Un **carril** es un camino de trabajo con sus pasos fijos, como los carriles de 
 
 | Carril | Cuándo | Qué queda escrito | Ejemplo |
 |---|---|---|---|
-| [**Responder**](responder.md) | preguntas: «¿dónde…?», «¿por qué…?», «¿qué pasa si…?» | nada | «¿qué worker procesa `activar-cliente`?» |
+| [**Responder**](responder.md) | preguntas: «¿dónde…?», «¿por qué…?», «¿qué pasa si…?» | nada | «¿qué clase asigna veterinario a una visita nueva?» |
 | [**FTD**](ftd.md) (*Fast Track Development*) | cambio claro, sin decisiones abiertas | un documento corto con checklist y evidencia | quitar una duplicación, corregir una validación |
-| [**ASDD**](asdd.md) (*Agent Spec Driven Development*) | decisiones abiertas, ambigüedad o riesgo 2 | [spec](../ayuda/glosario.md#spec), plan, progreso y verificación | un subproceso nuevo, cambiar cómo fallan los workers |
+| [**ASDD**](asdd.md) (*Agent Spec Driven Development*) | decisiones abiertas, ambigüedad o riesgo 2 | [spec](../ayuda/glosario.md#spec), plan, progreso y verificación | que el dueño elija veterinario, un cambio en el modelo de datos |
 
 Renombrar algo en cuarenta archivos sigue siendo [FTD](../ayuda/glosario.md#ftd): es mucho trabajo, pero no hay nada que decidir. Añadir un campo a una entidad con su migración de base de datos es [ASDD](../ayuda/glosario.md#asdd), aunque sean veinte líneas: hay que decidir el tipo de la columna, qué pasa con los datos que ya existen y si la migración se puede deshacer.
 
@@ -30,7 +30,7 @@ Renombrar algo en cuarenta archivos sigue siendo [FTD](../ayuda/glosario.md#ftd)
 Todo lo demás (documentos, tests, revisión, evidencia, commits) lo hace el agente y lo deja escrito en el [brain](../ayuda/glosario.md#brain).
 
 ## Los ejemplos de esta sección
-Además de Spring PetClinic, esta sección usa un **proyecto real** en el que se probó **meta-harness-factory**: seis microservicios Spring Boot con Camunda 8, [DDD](../ayuda/glosario.md#ddd) hexagonal y siete modelos [BPMN](../ayuda/glosario.md#bpmn-dmn), en adelante «el proyecto de reservas de viaje». Los textos, costes y documentos que verás salieron de esas pruebas; solo se han quitado los nombres propios.
+Los ejemplos salen de **Spring PetClinic Modulith**, el mismo proyecto del tutorial, trabajado con **meta-harness-factory** en un repositorio público: cada caso tiene su tarea, su rama y su [PR](../ayuda/glosario.md#pr), y sus costes son medidos. Mientras se completan las mediciones, algunas páginas indican qué ejemplo falta; las cifras que ya aparecen salen de una prueba anterior en otro proyecto Spring Boot.
 
 ## Consejos para el día a día
 - **Una tarea por sesión** cuando el trabajo es largo. Al cambiar de tarea, `/clear`: el brain guarda lo importante y la siguiente sesión arranca orientada.

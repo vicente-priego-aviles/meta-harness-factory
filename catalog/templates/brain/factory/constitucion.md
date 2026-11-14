@@ -16,10 +16,10 @@ status: draft
 {{STACK}}
 
 ## 2. Arquitectura
-- C1. El dominio no depende de Spring ni de infraestructura (lo comprueba ArchUnit).
+{{ARQUITECTURA}}
 
 ## 3. Procesos
-- P1. Un proceso BPMN desplegado es un contrato: cambiarlo es riesgo 2.
+{{PROCESOS}}
 
 ## 4. Calidad
 - Q1. TDD; ningún test se debilita ni desactiva para que pase.
@@ -28,7 +28,7 @@ status: draft
 - S1. Ningún secreto en el repositorio.
 
 ## 6. Git
-- G1. Riesgo 2 → PR con aprobación humana.
+- G1. Riesgo 2 → PR con aprobación humana.{{IDIOMA_CONSTITUCION}}
 
 ## 7. Definición de terminado
 - [ ] `node .mh/scripts/mvnq.mjs verify` en verde

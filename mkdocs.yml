@@ -123,6 +123,10 @@ nav:
       - Salida de Maven (mvnq): tokens/mvnq.md
       - Presupuesto y medidas: tokens/presupuesto.md
       - Resultados medidos: tokens/resultados.md
+  - Evaluación:
+      - evaluacion/index.md
+      - "C10·2 · Línea temporal de visitas": evaluacion/c10-linea-temporal-visitas.md
+      - "C16·1 · Gráfico de tipos de mascota": evaluacion/c16-grafico-tipos-mascota.md
   - Ayuda:
       - ayuda/index.md
       - Mantenimiento: ayuda/mantenimiento.md

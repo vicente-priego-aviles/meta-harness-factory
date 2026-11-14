@@ -23,6 +23,7 @@ Revisores de stack (si están instalados), por orden de prioridad para riesgo 1:
 |---|---|
 | workers, `*.bpmn`, `*.dmn`, formularios | `revisor-camunda` |
 | `dominio/`, `aplicacion/`, adaptadores | `revisor-ddd` |
+| `package-info.java`, eventos y listeners, uso de otro módulo (Spring Modulith) | `revisor-modulos` |
 | resto de Java, configuración, migraciones | `revisor-java-spring` |
 
 El panel crece con el riesgo porque cada revisor es una llamada completa a un modelo.

@@ -17,8 +17,11 @@ function decidirModulos(esc, resp, manifiesto) {
     : { estado: "excluido", motivo: "no hay build Java (pom.xml / Gradle)" };
   const segun = (sel, motivoSel, reevaluar) => (!java ? { estado: "excluido", motivo: "requiere el módulo java" }
     : sel ? { estado: "seleccionado", motivo: motivoSel } : { estado: "aplazado", motivo: "sin señales todavía", reevaluarSi: reevaluar });
-  d.ddd = segun(s.dominio || s.jmolecules, [s.dominio && "paquetes dominio/", s.jmolecules && "jMolecules"].filter(Boolean).join(" + "),
-    "aparece un paquete dominio/ o la dependencia jmolecules");
+  d.ddd = segun(s.dominio || s.jmolecules || s.springModulith,
+    [s.springModulith && "Spring Modulith", s.dominio && "paquetes dominio/", s.jmolecules && "jMolecules"].filter(Boolean).join(" + "),
+    "aparece un paquete dominio/ o la dependencia jmolecules o spring-modulith");
+  // Con Spring Modulith (y sin jMolecules) el proyecto no es hexagonal: fronteras entre módulos en vez de dominio puro
+  if (d.ddd.estado === "seleccionado" && s.springModulith && !s.jmolecules) d.ddd.variante = "spring-modulith";
   d.camunda = segun(s.camunda || resp.tipo === "orquestador-procesos",
     s.bpmn ? `${s.bpmn} ${s.bpmn === 1 ? "modelo" : "modelos"} BPMN/DMN` : s.camunda ? "dependencia de Camunda" : "proyecto de orquestación de procesos",
     "aparece un .bpmn/.dmn o la dependencia io.camunda");
@@ -47,7 +50,7 @@ function componentes(raiz, modulos, manifiesto) {
   try { instaladas = JSON.parse(leer(join(raiz, ".mh.json"), "{}") || "{}").plan?.skills || []; } catch {}
   for (const [id, dec] of Object.entries(modulos)) {
     if (dec.estado !== "seleccionado") continue;
-    const m = manifiesto[id];
+    const m = { ...manifiesto[id], ...(dec.variante ? manifiesto[id].variantes?.[dec.variante] : {}) };
     for (const s of m.skills || []) {
       const destino = join(raiz, ".claude", "skills", s);
       const nuestro = esEnlaceA(destino, `../../.mh/skills/${s}`) || instaladas.includes(s);
@@ -77,7 +80,7 @@ function archivos(raiz, esc, comp) {
       motivo: esc.claudeMd ? "bloque gestionado entre <!-- mh:inicio --> y <!-- mh:fin -->" : "índice corto desde plantilla" },
     { ruta: "init.sh", accion: existe(join(raiz, "init.sh")) ? "conservar" : "crear", motivo: "arranque y smoke test" },
     { ruta: "brain/", accion: esc.brainExiste ? "completar" : "crear", motivo: "solo se crean los archivos que falten; nunca se sobrescribe" },
-    { ruta: ".gitignore", accion: "añadir-lineas", motivo: ".mh/tmp/ y .mh/backups/" },
+    { ruta: ".gitignore", accion: "añadir-lineas", motivo: ".mh/tmp/, .mh/backups/ y brain/raw/sesiones/" },
   ];
   for (const s of comp.skills.filter((x) => x.estado === "seleccionado")) a.push({ ruta: `.claude/skills/${s.id}`, accion: "copiar", motivo: "skill" });
   for (const g of comp.agentes.filter((x) => x.estado === "seleccionado")) a.push({ ruta: `.claude/agents/${g.id}.md`, accion: "copiar", motivo: "subagente" });
@@ -137,6 +140,15 @@ function presupuesto(raiz, esc, comp) {
     skillsAutomaticas: auto.length, descripcionesSkillsChars: descSkills, descripcionesAgentesChars: descAgentes, reglasSiempreActivas: 0 };
 }
 
+/** Riesgo extra para .mh.json: con Spring Modulith, la API pública de cada módulo y sus package-info.java son contrato (riesgo 2). */
+function riesgoExtra(esc, modulos) {
+  if (modulos.ddd?.variante !== "spring-modulith") return null;
+  return {
+    nivel2: ["**/package-info.java", ...esc.modulosAplicacion.map((m) => `${m.ruta}/*.java`)],
+    contenido2: ["@ApplicationModule\\(", "@NamedInterface"],
+  };
+}
+
 /** Señales baratas de los módulos no instalados, para que el hook de arranque avise cuando aparezcan (sin escanear el proyecto). */
 function vigilar(modulos, manifiesto) {
   const v = {};
@@ -156,7 +168,7 @@ export function construirPlan(raiz, esc, resp) {
   const cuerpo = {
     version: VERSION,
     proyecto: esc.nombre,
-    respuestas: Object.fromEntries(["nivel", "tipo", "objetivo", "alcance", "integracion", "convencion", "formatoRama", "gestor", "proyecto", "acceso"]
+    respuestas: Object.fromEntries(["nivel", "tipo", "objetivo", "alcance", "integracion", "convencion", "formatoRama", "idiomaCodigo", "idiomaBrain", "traza", "gestor", "proyecto", "acceso"]
       .filter((k) => resp[k] !== undefined).map((k) => [k, resp[k]])),
     perfil: resp.alcance === "pequeno" ? "minimal" : "standard",
     modulos,
@@ -166,6 +178,7 @@ export function construirPlan(raiz, esc, resp) {
     git: { ramaBase: esc.ramaBase, remoto: esc.remoto?.host || null },
     presupuesto: presupuesto(raiz, esc, comp),
     vigilar: vigilar(modulos, manifiesto),
+    riesgo: riesgoExtra(esc, modulos),
     archivosBuild: esc.archivosBuild || [],
   };
   return { id: sha256(canonico(cuerpo)).slice(0, 12), ...cuerpo };

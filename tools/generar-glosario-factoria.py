@@ -14,7 +14,7 @@ import unicodedata
 
 origen = pathlib.Path("docs/glosario.md").read_text(encoding="utf-8")
 cuerpo_original = origen.split("\n---\n", 1)[1]
-cuerpo = cuerpo_original
+cuerpo = cuerpo_original.replace("<!-- solo-factoria -->\n", "")
 cuerpo = re.sub(r"\[([^\]]+)\]\((?!#)[^)]*\)", r"\1", cuerpo)
 cuerpo = cuerpo.replace("## Tu stack", "## Stack habitual")
 cuerpo = cuerpo.replace("Los de meta-harness-factory están en `docs/adr/`; los de cada proyecto en `brain/wiki/decisiones/`.",
@@ -38,6 +38,18 @@ destino.write_text(cabecera + cuerpo, encoding="utf-8")
 print(f"OK {destino} ({len(re.findall(r'^### ', cuerpo, re.M))} términos)")
 
 
+# --- Guía web: sin los términos marcados <!-- solo-factoria --> (Camunda, de momento; ADR-0017) ni sus menciones sueltas ---
+SOLO_FACTORIA = re.compile(r"^### [^\n]+\n<!-- solo-factoria -->\n.*?(?=^#{2,3} |\Z)", re.M | re.S)
+WEB_SUSTITUCIONES = [
+    ("- **2**: procesos BPMN/DMN, migraciones de BD,", "- **2**: migraciones de BD,"),
+    ("Hay revisores de Java/Spring, DDD, Camunda/BPMN, seguridad y tests.", "Hay revisores de Java/Spring, DDD, seguridad y tests."),
+    ("`nucleo` (siempre), `java`, `ddd`, `camunda`, `vaadin`, `git` y `tareas`.", "`nucleo` (siempre), `java`, `ddd`, `git`, `tareas` y otros de stack."),
+]
+cuerpo_web = SOLO_FACTORIA.sub("", cuerpo_original)
+for viejo, nuevo in WEB_SUSTITUCIONES:
+    assert viejo in cuerpo_web, f"sustitución web sin efecto: {viejo}"
+    cuerpo_web = cuerpo_web.replace(viejo, nuevo)
+
 # --- Guía web (MkDocs): anclas en el formato de MkDocs (#gestor-de-tareas) y sin enlaces a docs/ ---
 def ancla(texto):
     t = unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode()
@@ -47,7 +59,7 @@ def ancla(texto):
 # Documentos de diseño con página equivalente en la guía; el resto de enlaces quedan como texto
 EQUIVALENTES = {"02-software-factory.md": "../uso/index.md", "03-brain.md": "../arquitectura/brain.md"}
 web = re.sub(r"\[([^\]]+)\]\(([^)#][^)]*)\)",
-             lambda m: f"[{m.group(1)}]({EQUIVALENTES[m.group(2)]})" if m.group(2) in EQUIVALENTES else m.group(1), cuerpo_original)
+             lambda m: f"[{m.group(1)}]({EQUIVALENTES[m.group(2)]})" if m.group(2) in EQUIVALENTES else m.group(1), cuerpo_web)
 web = re.sub(r"\]\(#([^)]+)\)", lambda m: f"](#{ancla(m.group(1))})", web)
 web = re.sub(r"> \[!tip\] Cómo usarlo\n(> .*\n)+",
              "> [!tip] Cómo usarlo\n> Los términos están ordenados por tema. Usa el buscador (arriba) o el índice de la derecha para ir a uno.\n", web)
